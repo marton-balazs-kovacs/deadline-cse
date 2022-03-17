@@ -91,6 +91,36 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   timeline.push(instructionsScreen);
 
+  var consentScreen = {
+    type: HtmlButtonResponsePlugin,
+    stimulus:
+      `<div>
+        <h1>Beleegyező nyilatkozat</h1>
+        <p>
+    Felelősségem teljes tudatában kijelentem, hogy a mai napon az Eötvös Loránd
+    Tudományegyetem, Dr. Aczél Balázs kutatásvezető által végzett vizsgálatban
+    önként veszek részt. A vizsgálat jellegéről annak megkezdése előtt kielégítő
+    tájékoztatást kaptam. Elmúltam 18 éves. Nem szenvedek semmilyen pszichiátriai
+    betegségben. A vizsgálat idején alkohol vagy drogok hatása alatt nem állok.
+    Tudomásul veszem, hogy az azonosításomra alkalmas személyi adataimat bizalmasan
+    kezelik. Hozzájárulok ahhoz, hogy a vizsgálat során a rólam felvett, személyem
+    azonosítására nem alkalmas adatok más kutatók számára is hozzáférhetők legyenek.
+    Fenntartom a jogot arra, hogy a vizsgálat során annak folytatásától bármikor
+    elállhassak. Ilyen esetben a rólam addig felvett adatokat törölni kell.
+    Tudomásul veszem, hogy csak a teljesen befejezett kitöltésért kapok pontot a
+    Pszichológiai kísérletben és tudományos aktivitásban való részvétel című
+    kurzuson.
+  </p>
+  <br>
+  <h3>A kutatásban való részvétel körülményeiről részletes tájékoztatást kaptam, a feltételekkel egyetértek.</h3>
+  </div>
+  `,
+    choices: ['Részt veszek', 'Nem veszek részt'],
+    prompt: '<p>A továbblépéshez kérem kattintson a Részt veszek gombra.</p>'
+  };
+
+  timeline.push(consentScreen);
+
   // Switch to fullscreen
   timeline.push({
     type: FullscreenPlugin,
