@@ -27,16 +27,16 @@ function range(stop) {
   
   // Create pseudo-random trial orders ----------------------------------------------------------
   // For the test trials
-  function getRandomTrials(numberOfTrials, addFirstTrial) {
+  export function getRandomTrials(numberOfTrials, addFirstTrial) {
     var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
     var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
-
+  
     var repetition = numberOfTrials / 8
   
     var listOne = []
-    for (i in range(repetition)) {
-      for (j in range(redBlock.length)) {
-        for (k in range(redBlock[j].length)) {
+    for (const i in range(repetition)) {
+      for (const j in range(redBlock.length)) {
+        for (const k in range(redBlock[j].length)) {
           listOne.push(redBlock[j][k])
         }
       }
@@ -45,9 +45,9 @@ function range(stop) {
     listOne = shuffleArray(listOne)
   
     var listTwo = []
-    for (i in range(repetition)) {
-      for (j in range(blueBlock.length)) {
-        for (k in range(blueBlock[j].length)) {
+    for (const i in range(repetition)) {
+      for (const j in range(blueBlock.length)) {
+        for (const k in range(blueBlock[j].length)) {
           listTwo.push(blueBlock[j][k])
         }
       }
@@ -56,7 +56,7 @@ function range(stop) {
     listTwo = shuffleArray(listTwo)
   
     var trialList = []
-    for (i in range(listOne.length)) {
+    for (const i in range(listOne.length)) {
       trialList.push(listOne[i])
       trialList.push(listTwo[i])
     }
@@ -74,3 +74,39 @@ function range(stop) {
   
     return loopData
   }
+
+  // For the calibration trials
+export function getRandomCalbirationTrials(numberOfTrials) {
+  const repetition = numberOfTrials / 4
+
+  var listCalibrationOne = []
+  for (i in range(repetition)) {
+    for (k in range(redBlock[0].length)) {
+      listCalibrationOne.push(redBlock[0][k])
+    }
+  }
+
+  listCalibrationOne = shuffleArray(listCalibrationOne)
+
+  var listCalibrationTwo = []
+  for (i in range(repetition)) {
+    for (k in range(blueBlock[0].length)) {
+      listCalibrationTwo.push(blueBlock[0][k])
+    }
+  }
+
+  listCalibrationTwo = shuffleArray(listCalibrationTwo)
+
+  var trialCalibrationList = []
+  for (i in range(listCalibrationOne.length)) {
+    trialCalibrationList.push(listCalibrationOne[i])
+    trialCalibrationList.push(listCalibrationTwo[i])
+  }
+
+  var calibrationLoopData = []
+  trialCalibrationList.forEach(element => {
+    calibrationLoopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+  })
+
+  return calibrationLoopData
+}

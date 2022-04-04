@@ -14,6 +14,7 @@
 
 // You can import stylesheets (.scss or .css).
 import "../styles/main.scss";
+import {getRandomTrials, getRandomCalbirationTrials} from "./utils.js"
 
 import { initJsPsych } from "jspsych";
 
@@ -21,80 +22,6 @@ import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 import HtmlButtonResponsePlugin from "@jspsych/plugin-html-button-response"
 import PreloadPlugin from "@jspsych/plugin-preload";
-
-// Calculate range
-function range(stop) {
-  var result = [];
-  for (var i = 0; i < stop; i += 1) {
-    result.push(i);
-  }
-  return result;
-}
-
-// Shuffle the content of an array
-function shuffleArray(array) {
-  for (var i = array.length - 1; i > 0; i--) {
-
-    // Generate random number
-    var j = Math.floor(Math.random() * (i + 1));
-
-    var temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
-
-  return array;
-}
-
-function getRandomTrials(numberOfTrials, addFirstTrial) {
-  var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
-  var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
-
-  var repetition = numberOfTrials / 8
-
-console.log(repetition)
-
-  var listOne = []
-  for (const i in range(repetition)) {
-    for (const j in range(redBlock.length)) {
-      for (const k in range(redBlock[j].length)) {
-        listOne.push(redBlock[j][k])
-      }
-    }
-  }
-
-  listOne = shuffleArray(listOne)
-
-  var listTwo = []
-  for (const i in range(repetition)) {
-    for (const j in range(blueBlock.length)) {
-      for (const k in range(blueBlock[j].length)) {
-        listTwo.push(blueBlock[j][k])
-      }
-    }
-  }
-
-  listTwo = shuffleArray(listTwo)
-
-  var trialList = []
-  for (const i in range(listOne.length)) {
-    trialList.push(listOne[i])
-    trialList.push(listTwo[i])
-  }
-
-  var loopData = []
-  trialList.forEach(element => {
-    loopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
-  });
-
-  // Add one random in the beginning as the first trial
-  if (addFirstTrial) {
-    const firstTrial = blueBlock[Math.floor(Math.random() * 2)][Math.floor(Math.random() * 2)]
-    loopData.unshift({ word: firstTrial[0], color: firstTrial[1], congruency: firstTrial[2], correctResponse: firstTrial[3] })
-  }
-
-  return loopData
-}
 
 /**
  * This method will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -105,26 +32,14 @@ console.log(repetition)
  * @param {{images: string[]; audio: string[]; video: string[];, misc: string[];}} options.assetPaths An object with lists of file paths for the respective `@...Dir` pragmas
  */
 export async function run({ assetPaths, input = {}, environment }) {
-  const jsPsych = initJsPsych();
+  const jsPsych = initJsPsych({
+    // Comment out if do not want to show data on finish
+    on_finish: function() {
+      jsPsych.data.displayData();
+    }
+  });
 
   const timeline = [];
-
-  // Create pseudo random trials
-  const testTrials = getRandomTrials(80, true)
-
-  var testTemplate = {
-    timeline: [
-      {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: '<p style="color: gray;">+</p>',
-        choiches: "NO_KEYS",
-        trial_duration: 1000
-      },
-      {
-        
-      }
-    ]
-  }
 
   // Switch to fullscreen
   timeline.push({
@@ -138,12 +53,6 @@ export async function run({ assetPaths, input = {}, environment }) {
     images: assetPaths.images,
     audio: assetPaths.audio,
     video: assetPaths.video,
-  });
-
-  // Welcome screen
-  timeline.push({
-    type: HtmlKeyboardResponsePlugin,
-    stimulus: "<p>Welcome to deadline-cse!<p/>",
   });
 
   // Informed
@@ -267,28 +176,28 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   // Table for key-response mapping
   const keyResponseMapping = `
-<table>
+<table style="margin-left: auto; margin-right: auto;">
 <tr>
   <th>UJJ</th>
   <th>VÁLASZGOMB</th>
   <th>INGER</th>
 </tr>
-<tr>
+<tr style="font-weight: normal;">
   <td>bal középső</td>
   <td>x</td>
   <td>piros</td>
 </tr>
-<tr>
+<tr style="font-weight: normal;">
   <td>bal mutató</td>
   <td>c</td>
   <td>zöld</td>
 </tr>
-<tr>
+<tr style="font-weight: normal;">
   <td>jobb mutató</td>
   <td>n</td>
   <td>kék</td>
 </tr>
-<tr>
+<tr style="font-weight: normal;">
   <td>jobb középső</td>
   <td>m</td>
   <td>sárga</td>
@@ -302,13 +211,14 @@ export async function run({ assetPaths, input = {}, environment }) {
     stimulus: `
   <div>
   <h2>Gyakorlás</2>
-  <p>
+  <p style="font-weight: normal;">
     Az alábbi táblázatban láthatod, hogy melyik betűszínhez melyik gomb tartozik,
     illetve, hogy melyik gombot melyik ujjaddal kell megnyomnod.
     A feladatod tehát, hogy ezek alapján reagálj a felvillanó szavak betűszínére.
     Minden szó megjelenése előtt egy '+' jelet fogsz látni, ez jelzi, hogy a következő szóra kell készülnöd.
   </p>
   <p>A gyakorlás megkezdéséhez helyezd az ujjaid a megfelelő gombokra és nyomd meg a Space billentyűt!</p>
+  <br>
   ${keyResponseMapping}
   </div>
   `,
@@ -317,20 +227,212 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   timeline.push(startPracticeScreen);
 
-  // // Define a template for a test stroop trial
-  // var trial = {
-  //   type: jsPsychHtmlKeyboardResponse,
+  // Practice phase
+  // Create pseudo random practice stimuli
+  // TRUE value should be 24 false
+  const practiceStimuli = getRandomTrials(4, false);
 
+  // Define template for fixation cross
+  var fixationCross = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: '<div style="font-size:60px; color: gray;">+</div>',
+    choices: "NO_KEYS",
+    trial_duration: 1000,
+    data: {
+      task: 'fixation'
+    }
+  };
 
-  // }
+  // Define a template for a practice stroop trial
+  var practiceTemplate = {
+    type: HtmlKeyboardResponsePlugin,
+    // HTML template for practice trial
+    stimulus: function () {
+      var html = `
+      <div style="font-size: 36px; font-weight: bold; color: ${ jsPsych.timelineVariable('color') }">
+      ${ jsPsych.timelineVariable('word') }
+      <br>
+      <div style="display: inline-block; color:black; font-weight:normal;">
+        x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>
+      </div>
+      </div>
+      `
 
-  // var trial = {
-  //   type: jsPsychHtmlKeyboardResponse,
-  //   stimulus: '<p style="font-size:36px; color:green;">BLUE</p>',
-  //   choices: ['x', 'c', 'n', 'm'],
-  //   prompt: "<p>Is the ink color (r)ed, (g)reen, or (b)lue?</p>"
-  // };
+      return html
+    },
+    choiches: ['x', 'c', 'n', 'm'],
+    trial_duration: 250,
+    data: {
+      task: 'practice_trial',
+      correct_response: jsPsych.timelineVariable('correctResponse')
+    },
+    on_finish: function(data) {
+      // Score the response as correct or incorrect.
+      if(jsPsych.pluginAPI.compareKeys(data.response, data.correct_response)){
+        data.correct = true;
+      } else {
+        data.correct = false; 
+      }
+    }
+  };
 
+  // Define blank screen
+  var blank = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: '<div></div>',
+    choiches: ['x', 'c', 'n', 'm'],
+    data: {
+      task: 'blank'
+    },
+    trial_duration: null
+  };
+
+  // Define a template for a feedback trial
+  var feedback = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: function() {
+      // The feedback stimulus is a dynamic parameter because we can't know in advance whether
+      // the stimulus should be 'correct' or 'incorrect'.
+      // Instead, this function will check the accuracy of the last response and use that information to set
+      // the stimulus value on each trial.
+      var last_trial_correct = jsPsych.data.get().last(1).values()[0].correct;
+      if(last_trial_correct){
+        return `
+          <div style="font-size: 36px; font-weight: bold; color: grey;">
+            Helyes
+            <br>
+            <div style="display: inline-block; color:black; font-weight:normal;">
+              x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>
+            </div>
+          </div>`; 
+        // the parameter value has to be returned from the function
+      } else {
+        return `
+        <div style="font-size: 36px; font-weight: bold; color: grey;">
+          Helytelen
+          <br>
+          <div style="display: inline-block; color:black; font-weight:normal;">
+            x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>
+          </div>
+        </div>`; 
+        // the parameter value has to be returned from the function
+      }
+    },
+    choices: "NO_KEYS",
+    trial_duration: 1000,
+    data: {
+      task: 'feedback'
+    }
+  };
+
+  var practiceTrial = {
+    timeline: [fixationCross, practiceTemplate, practiceBlank, feedback],
+    timeline_variables: practiceStimuli
+  }
+
+  timeline.push(practiceTrial);
+
+  // End practice phase
+  var endPractice = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: `
+      <div>
+        <h2>Gyakorlás vége</h2>
+        <p>
+          Most következik a négy kísérleti szakasz, amelyek 'A' és 'B' részekből állnak.
+          Ezek során már nem lesz a képernyőn, hogy melyik színhez
+          melyik gomb tartozik, valamint nem fogsz visszajelzést kapni arról, hogy
+          helyesen válaszoltál-e. Tartsd az ujjaid a megfelelő gombokon és nyomd
+          meg a Space billentyűt az első 'A' rész megkezdéséhez!
+        </p>
+        ${keyResponseMapping}
+      </div>`,
+    choices: [" "],
+    data: { 
+      task: 'end_practice'
+    }
+  }
+
+  timeline.push(endPractice);
+
+  // Calibration phase
+  // TRUE value should be 28
+  const calibrationStimuli = getRandomCalbirationTrials(8);
+
+  // Define a template for a calibration stroop trial
+  var calibrationTemplate = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: function() {
+      return `<div style="font-size: 36px; font-weight: bold; color: ${ jsPsych.timelineVariable('color') }">
+      ${ jsPsych.timelineVariable('word') }
+      </div>`
+    },
+    choiches: ['x', 'c', 'n', 'm'],
+    trial_duration: 250,
+    data: {
+      task: 'calibration_trial',
+      correct_response: jsPsych.timelineVariable('correctResponse')
+    }
+  };
+
+  var calibrationTrial = {
+    timeline: [fixationCross, calibrationTemplate, blank, feedback],
+    timeline_variables: calibrationStimuli
+  }
+
+  timeline.push(calibrationTrial);
+
+  // End calibration phase
+  var endCalibration = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: `
+        <div>
+          <h2>'A' rész vége</h2>
+          <p>
+            A most következő 'B' részben limitált időd lesz reagálni, ezért talán gyorsabbnak fog tűnni a feladat.
+            Igyekezz mindig a következő szó megjelenése előtt reagálni (ha meglátod a '+' jelet, már a következő szóra kell készülnöd)
+            és ügyelj arra, hogy helyesen válaszolj!
+            <br>
+            Továbbra is tartsd az ujjaid a megfelelő gombokon és nyomd meg a Space billentyűt a 'B' rész megkezdéséhez!
+          </p>
+          ${keyResponseMapping}
+        </div>`,
+    choices: [" "],
+    data: { 
+      task: 'end_calibration'
+    }
+  }
+
+  timeline.push(endCalibration);
+
+  // Test phase
+  // Create pseudo random test stimuli
+  // TRUE value should be 80 true
+  const testStimuli = getRandomTrials(8, true);
+
+  // Define a template for a test stroop trial
+  var testTemplate = {
+    type: HtmlKeyboardResponsePlugin,
+    // HTML template for test trial
+    stimulus: function() {
+      return `<div style="font-size: 36px; font-weight: bold; color: ${ jsPsych.timelineVariable('color') }">
+      ${ jsPsych.timelineVariable('word') }
+      </div>`
+    },
+    choiches: ['x', 'c', 'n', 'm'],
+    trial_duration: 250,
+    data: {
+      task: 'test_trial',
+      correct_response: jsPsych.timelineVariable('correctResponse')
+    }
+  };
+
+  var testTrial = {
+    timeline: [fixationCross, testTemplate],
+    timeline_variables: testStimuli
+  }
+
+  timeline.push(testTrial);
 
   await jsPsych.run(timeline);
 
