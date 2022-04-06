@@ -76,12 +76,15 @@ function range(stop) {
   }
 
   // For the calibration trials
-export function getRandomCalbirationTrials(numberOfTrials) {
+export function getRandomCalibrationTrials(numberOfTrials) {
+  var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
+  var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+  
   const repetition = numberOfTrials / 4
 
   var listCalibrationOne = []
-  for (i in range(repetition)) {
-    for (k in range(redBlock[0].length)) {
+  for (const i in range(repetition)) {
+    for (const k in range(redBlock[0].length)) {
       listCalibrationOne.push(redBlock[0][k])
     }
   }
@@ -89,8 +92,8 @@ export function getRandomCalbirationTrials(numberOfTrials) {
   listCalibrationOne = shuffleArray(listCalibrationOne)
 
   var listCalibrationTwo = []
-  for (i in range(repetition)) {
-    for (k in range(blueBlock[0].length)) {
+  for (const i in range(repetition)) {
+    for (const k in range(blueBlock[0].length)) {
       listCalibrationTwo.push(blueBlock[0][k])
     }
   }
@@ -98,7 +101,7 @@ export function getRandomCalbirationTrials(numberOfTrials) {
   listCalibrationTwo = shuffleArray(listCalibrationTwo)
 
   var trialCalibrationList = []
-  for (i in range(listCalibrationOne.length)) {
+  for (const i in range(listCalibrationOne.length)) {
     trialCalibrationList.push(listCalibrationOne[i])
     trialCalibrationList.push(listCalibrationTwo[i])
   }

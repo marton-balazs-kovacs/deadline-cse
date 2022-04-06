@@ -7,11 +7,18 @@
     "jatos": "npm run jspsych -- build --jatos"
   },
   "dependencies": {
+    "@babel/core": "^7.17.8",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@babel/plugin-proposal-object-rest-spread": "^7.17.3",
+    "@babel/plugin-transform-classes": "^7.16.7",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "@babel/preset-typescript": "^7.16.7",
     "@jspsych/plugin-fullscreen": "^1.0.1",
     "@jspsych/plugin-html-button-response": "^1.1.0",
     "@jspsych/plugin-html-keyboard-response": "^1.0.0",
     "@jspsych/plugin-preload": "^1.0.0",
-    "jspsych": "^7.0.0"
+    "jspsych": "^7.2.1"
   },
   "devDependencies": {
     "jspsych-builder": "^4.1.1"

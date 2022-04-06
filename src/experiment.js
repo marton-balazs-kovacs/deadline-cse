@@ -14,7 +14,7 @@
 
 // You can import stylesheets (.scss or .css).
 import "../styles/main.scss";
-import {getRandomTrials, getRandomCalbirationTrials} from "./utils.js"
+import {getRandomTrials, getRandomCalibrationTrials} from "./utils.js"
 
 import { initJsPsych } from "jspsych";
 
@@ -35,11 +35,19 @@ export async function run({ assetPaths, input = {}, environment }) {
   const jsPsych = initJsPsych({
     // Comment out if do not want to show data on finish
     on_finish: function() {
-      jsPsych.data.displayData();
+      jsPsych.data.displayData('csv');
     }
   });
 
   const timeline = [];
+  
+  // generate a random subject ID with 15 characters
+  var participant_id = jsPsych.randomization.randomID(15);
+
+  // Add data to all rows of the participant
+  jsPsych.data.addProperties({
+    participant_id: participant_id
+  });
 
   // Switch to fullscreen
   timeline.push({
@@ -55,11 +63,14 @@ export async function run({ assetPaths, input = {}, environment }) {
     video: assetPaths.video,
   });
 
+  var informedProceed = true
+
   // Informed
   var informedScreen = {
-    type: HtmlButtonResponsePlugin,
-    stimulus:
-      `<div> 
+    timeline: [{
+      type: HtmlButtonResponsePlugin,
+      stimulus: function() {
+      return  `<div> 
     <h1>Tájékoztató nyilatkozat</h1> 
     <p>
       Egy tudományos kutatásban veszel részt, amelynek témavezetője Dr. Aczél Balázs,
@@ -89,18 +100,35 @@ export async function run({ assetPaths, input = {}, environment }) {
       a kísérlettel kapcsolatban, kérlek, keresd Székely Zsuzsát (szekely.zsuzsa.mail@gmail.com)!
       <p>A „Hozzájárulás az adatkezeléshez” c. dokumentumot elolvastam és a benne foglaltakat elfogadom.</p>
     </p>
-  </div>`,
-    // canvas_size: [300, 300],
-    choices: ['Részt veszek', 'Nem veszek részt'],
-    prompt: '<p>A továbblépéshez kérem kattintson a Részt veszek gombra.</p>'
+    <p class=${informedProceed? null: 'alert'}>A továbblépéshez kérem kattintson a Részt veszek gombra.</p>
+  </div>`},
+      // canvas_size: [300, 300],
+      choices: ['Részt veszek', 'Nem veszek részt'],
+      on_finish: function (data) {
+        // agree is 0, not agree is 1 as a response
+        if (data.response === 0) {
+          informedProceed = true
+        } else {
+          informedProceed = false
+        }
+      }
+    }],
+    loop_function: function(){
+      if(informedProceed){
+        return false;
+      } else {
+        return true;
+      }
+    }
   };
 
-  timeline.push(informedScreen);
+  var consentProceed = true
 
   var consentScreen = {
-    type: HtmlButtonResponsePlugin,
-    stimulus:
-      `<div>
+    timeline: [{
+      type: HtmlButtonResponsePlugin,
+      stimulus: function () {
+        return `<div>
         <h1>Beleegyező nyilatkozat</h1>
         <p>
     Felelősségem teljes tudatában kijelentem, hogy a mai napon az Eötvös Loránd
@@ -119,13 +147,27 @@ export async function run({ assetPaths, input = {}, environment }) {
   </p>
   <br>
   <h3>A kutatásban való részvétel körülményeiről részletes tájékoztatást kaptam, a feltételekkel egyetértek.</h3>
+  <p class=${consentProceed ? null : 'alert'}>A továbblépéshez kérem kattintson a Részt veszek gombra.</p>
   </div>
-  `,
-    choices: ['Részt veszek', 'Nem veszek részt'],
-    prompt: '<p>A továbblépéshez kérem kattintson a Részt veszek gombra.</p>'
+  `},
+      choices: ['Részt veszek', 'Nem veszek részt'],
+      on_finish: function (data) {
+        // agree is 0, not agree is 1 as a response
+        if (data.response === 0) {
+          consentProceed = true
+        } else {
+          consentProceed = false
+        }
+      }
+    }],
+    loop_function: function () {
+      if (consentProceed) {
+        return false;
+      } else {
+        return true;
+      }
+    }
   };
-
-  timeline.push(consentScreen);
 
   // Create instructions
   const instructionsScreen = {
@@ -171,8 +213,6 @@ export async function run({ assetPaths, input = {}, environment }) {
   `,
     choices: [" "]
   };
-
-  timeline.push(instructionsScreen);
 
   // Table for key-response mapping
   const keyResponseMapping = `
@@ -225,8 +265,6 @@ export async function run({ assetPaths, input = {}, environment }) {
     choices: [" "]
   };
 
-  timeline.push(startPracticeScreen);
-
   // Practice phase
   // Create pseudo random practice stimuli
   // TRUE value should be 24 false
@@ -243,48 +281,36 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
-  // Define a template for a practice stroop trial
-  var practiceTemplate = {
+  var practiceTrial = {
+    // Define a template for a practice stroop trial
     type: HtmlKeyboardResponsePlugin,
     // HTML template for practice trial
     stimulus: function () {
-      var html = `
-      <div style="font-size: 36px; font-weight: bold; color: ${ jsPsych.timelineVariable('color') }">
-      ${ jsPsych.timelineVariable('word') }
-      <br>
-      <div style="display: inline-block; color:black; font-weight:normal;">
-        x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>
-      </div>
+      return `
+      <div style="font-size: 36px; font-weight: bold; color: ${jsPsych.timelineVariable('color')}">
+      ${jsPsych.timelineVariable('word')}
       </div>
       `
-
-      return html
     },
     choiches: ['x', 'c', 'n', 'm'],
-    trial_duration: 250,
+    trial_duration: null,
+    stimulus_duration: 250,
+    prompt: `
+        <div style="display: inline-block; color:black; font-weight:normal; font-size: 36px;">
+          x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>
+        </div>`,
     data: {
       task: 'practice_trial',
       correct_response: jsPsych.timelineVariable('correctResponse')
     },
-    on_finish: function(data) {
+    on_finish: function (data) {
       // Score the response as correct or incorrect.
-      if(jsPsych.pluginAPI.compareKeys(data.response, data.correct_response)){
+      if (jsPsych.pluginAPI.compareKeys(data.response, data.correct_response)) {
         data.correct = true;
       } else {
-        data.correct = false; 
+        data.correct = false;
       }
     }
-  };
-
-  // Define blank screen
-  var blank = {
-    type: HtmlKeyboardResponsePlugin,
-    stimulus: '<div></div>',
-    choiches: ['x', 'c', 'n', 'm'],
-    data: {
-      task: 'blank'
-    },
-    trial_duration: null
   };
 
   // Define a template for a feedback trial
@@ -325,12 +351,10 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
-  var practiceTrial = {
-    timeline: [fixationCross, practiceTemplate, practiceBlank, feedback],
+  var practiceBlock = {
+    timeline: [fixationCross, practiceTrial, feedback],
     timeline_variables: practiceStimuli
   }
-
-  timeline.push(practiceTrial);
 
   // End practice phase
   var endPractice = {
@@ -351,88 +375,225 @@ export async function run({ assetPaths, input = {}, environment }) {
     data: { 
       task: 'end_practice'
     }
-  }
-
-  timeline.push(endPractice);
+  };
 
   // Calibration phase
-  // TRUE value should be 28
-  const calibrationStimuli = getRandomCalbirationTrials(8);
+  const blockLoopData = [
+    { blockId: '1', testStimuli: getRandomTrials(4, true), calibrationStimuli: getRandomCalibrationTrials(4) },
+    { blockId: '2', testStimuli: getRandomTrials(4, true), calibrationStimuli: getRandomCalibrationTrials(4) },
+    { blockId: '3', testStimuli: getRandomTrials(4, true), calibrationStimuli: getRandomCalibrationTrials(4) },
+    { blockId: '4', testStimuli: getRandomTrials(4, true), calibrationStimuli: getRandomCalibrationTrials(4) },
+  ];
+
+  var index = 0;
 
   // Define a template for a calibration stroop trial
-  var calibrationTemplate = {
+  var calibrationTrial = {
     type: HtmlKeyboardResponsePlugin,
-    stimulus: function() {
-      return `<div style="font-size: 36px; font-weight: bold; color: ${ jsPsych.timelineVariable('color') }">
-      ${ jsPsych.timelineVariable('word') }
-      </div>`
+    stimulus: function () {
+      var block_data = jsPsych.timelineVariable('calibrationStimuli')
+      var trial_data = block_data[index]
+
+      return `<div style="font-size: 36px; font-weight: bold; color: ${trial_data.color}">
+            ${trial_data.word}
+            </div>`
     },
     choiches: ['x', 'c', 'n', 'm'],
-    trial_duration: 250,
+    trial_duration: null,
+    stimulus_duration: 250,
     data: {
       task: 'calibration_trial',
-      correct_response: jsPsych.timelineVariable('correctResponse')
+      correct_response: function() {
+        var block_data = jsPsych.timelineVariable('calibrationStimuli')
+        var trial_data = block_data[index]
+        return trial_data.correctResponse
+      }
+    },
+    on_finish: function (data) {
+      // Score the response as correct or incorrect.
+      if (jsPsych.pluginAPI.compareKeys(data.response, data.correct_response)) {
+        data.correct = true;
+      } else {
+        data.correct = false;
+      }
+
+      index++
     }
   };
 
-  var calibrationTrial = {
-    timeline: [fixationCross, calibrationTemplate, blank, feedback],
-    timeline_variables: calibrationStimuli
-  }
+  var calibrationBlock = {
+    timeline: [fixationCross, calibrationTrial],
+    data: {
+      block_id: function() {
+        jsPsych.timelineVariable('blockId')
+      }
+    },
+    loop_function() {
+      if (index == blockLoopData[jsPsych.timelineVariable('blockId')].calibrationStimuli.length) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  };
 
-  timeline.push(calibrationTrial);
+  var deadline
 
   // End calibration phase
   var endCalibration = {
     type: HtmlKeyboardResponsePlugin,
     stimulus: `
-        <div>
-          <h2>'A' rész vége</h2>
-          <p>
-            A most következő 'B' részben limitált időd lesz reagálni, ezért talán gyorsabbnak fog tűnni a feladat.
-            Igyekezz mindig a következő szó megjelenése előtt reagálni (ha meglátod a '+' jelet, már a következő szóra kell készülnöd)
-            és ügyelj arra, hogy helyesen válaszolj!
-            <br>
-            Továbbra is tartsd az ujjaid a megfelelő gombokon és nyomd meg a Space billentyűt a 'B' rész megkezdéséhez!
-          </p>
-          ${keyResponseMapping}
-        </div>`,
+          <div>
+            <h2>'A' rész vége</h2>
+            <p>
+              A most következő 'B' részben limitált időd lesz reagálni, ezért talán gyorsabbnak fog tűnni a feladat.
+              Igyekezz mindig a következő szó megjelenése előtt reagálni (ha meglátod a '+' jelet, már a következő szóra kell készülnöd)
+              és ügyelj arra, hogy helyesen válaszolj!
+              <br>
+              Továbbra is tartsd az ujjaid a megfelelő gombokon és nyomd meg a Space billentyűt a 'B' rész megkezdéséhez!
+            </p>
+            ${keyResponseMapping}
+          </div>`,
     choices: [" "],
-    data: { 
-      task: 'end_calibration'
+    data: {
+      task: 'end_calibration',
+      block_id: function() {
+        jsPsych.timelineVariable('blockId')
+      }
+    },
+    on_start: function () {
+      index = 0;
+      var deadline = jsPsych.data.get().filter({task: 'calibration_trial', correct: true}).select('rt').mean();
     }
-  }
-
-  timeline.push(endCalibration);
+};
 
   // Test phase
-  // Create pseudo random test stimuli
-  // TRUE value should be 80 true
-  const testStimuli = getRandomTrials(8, true);
-
-  // Define a template for a test stroop trial
-  var testTemplate = {
+  var testTrial = {
+    // Define a template for a test stroop trial
     type: HtmlKeyboardResponsePlugin,
     // HTML template for test trial
-    stimulus: function() {
-      return `<div style="font-size: 36px; font-weight: bold; color: ${ jsPsych.timelineVariable('color') }">
-      ${ jsPsych.timelineVariable('word') }
+    stimulus: function () {
+      var block_data = jsPsych.timelineVariable('testStimuli')
+      var trial_data = block_data[index]
+
+      return `<div style="font-size: 36px; font-weight: bold; color: ${trial_data.color}">
+      ${trial_data.word}
       </div>`
     },
     choiches: ['x', 'c', 'n', 'm'],
-    trial_duration: 250,
+    // trial duration is set by the personal deadline of the participant per block
+    trial_duration: deadline,
+    stimulus_duration: 250,
     data: {
       task: 'test_trial',
-      correct_response: jsPsych.timelineVariable('correctResponse')
+      correct_response: function() {
+        var block_data = jsPsych.timelineVariable('testStimuli')
+        var trial_data = block_data[index]
+        return trial_data.correctResponse
+      }
+    },
+    on_finish: function (data) {
+      // Score the response as correct or incorrect.
+      if (jsPsych.pluginAPI.compareKeys(data.response, data.correct_response)) {
+        data.correct = true;
+      } else {
+        data.correct = false;
+      }
+
+      index++
     }
   };
 
-  var testTrial = {
-    timeline: [fixationCross, testTemplate],
-    timeline_variables: testStimuli
+  var testBlock = {
+    timeline: [fixationCross, testTrial],
+    data: {
+      block_id: function() {
+        jsPsych.timelineVariable('blockId')
+      }
+    },
+    loop_function() {
+      if (index == blockLoopData[jsPsych.timelineVariable('blockId')].testStimuli.length) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  };
+
+  // Between block phase
+  var betweenBlock = {
+    timeline: [{
+      type: HtmlKeyboardResponsePlugin,
+      stimulus: `
+    <div class='betweenblock'>
+    <h2>Ez a szakasz véget ért.</2>
+    <p>
+      A következő előtt tarthatsz egy rövid szünetet.
+      A folytatáshoz helyezd az ujjaid a megfelelő gombokra és nyomd meg a Space billentyűt!
+    </p>
+    ${keyResponseMapping}
+    </div>
+    `,
+      choices: [" "],
+      data: {
+        task: 'end_calibration',
+        block_id: function() {
+          jsPsych.timelineVariable('blockId')
+        }
+      },
+      on_start: function () {
+        index = 0
+      }
+    }],
+    conditional_function: function () {
+      if (jsPsych.timelineVariable('blockId') != 4) {
+        true
+      } else {
+        false
+      }
+    }
   }
 
-  timeline.push(testTrial);
+  var blockLoop = {
+    timeline: [calibrationBlock, endCalibration, testBlock, betweenBlock],
+    timeline_variables: blockLoopData
+  }
+
+  // End of experiment screen
+  var endExperiment = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: `
+    <div>
+    <h1>Kész</h1>
+    <p>
+      A kísérlet véget ért, 80%-os pontossággal teljesítetted a tesztet. Köszönjük a részvételt!
+    </p>
+    <p>
+      A kutatásban való részvételedet a Neptun-kódod megadásával igazolhatod,
+      amit <a target="_blank" href="https://forms.gle/HxaQDSy5wdsStJyM8">ERRE</a> a linkre kattintva tudsz megtenni. Ne feledd, hogy csak akkor kapod meg a pontot,
+      ha a feladat mindkét verzióját teljesíted és mind a kétszer megadod a Neptun-kódodat!
+    </p>
+    <p>
+      Ha bármi kérdésed vagy megjegyzésed van, kérlek, vedd fel a kapcsolatot Székely Zsuzsával, a kutatás vezetőjével ezen az email címen: szekely.zsuzsa.mail@gmail.com!
+    </p>
+    </div>
+    `,
+    choices: [" "],
+    data: {
+      task: 'end_experiment'
+    }
+  };
+
+  timeline.push(
+    informedScreen,
+    consentScreen,
+    instructionsScreen,
+    startPracticeScreen,
+    practiceBlock,
+    endPractice,
+    blockLoop,
+    endExperiment
+  );
 
   await jsPsych.run(timeline);
 
