@@ -245,6 +245,26 @@ export async function run({ assetPaths, input = {}, environment }) {
 </table>
 `
 
+  // Count down page
+  const countDownScreen = {
+    timeline: [{
+      type: HtmlKeyboardResponsePlugin,
+      stimulus: function() {
+        return `<h1>${jsPsych.timelineVariable("count")}</h1>`
+      },
+      choices: "NO_KEYS",
+      trial_duration: 1000,
+      data: {
+        task: 'countdown'
+      }
+    }],
+    timeline_variables: [
+      {count: '3'},
+      {count: '2'},
+      {count: '1'}
+    ]
+  }
+
   // Start of practice page
   const startPracticeScreen = {
     type: HtmlKeyboardResponsePlugin,
@@ -464,6 +484,9 @@ export async function run({ assetPaths, input = {}, environment }) {
     on_start: function () {
       index = 0;
       var deadline = jsPsych.data.get().filter({task: 'calibration_trial', correct: true}).select('rt').mean();
+      if (deadline === undefined) {
+        jsPsych.endExperiment("A kísérlet végetért, mert túl sok hibát követtél el az 'A' rész alatt. Kérlek, hogy vedd fel a kapcsolatot a kísérletvezetővel.");
+      }
     }
 };
 
@@ -555,7 +578,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   }
 
   var blockLoop = {
-    timeline: [calibrationBlock, endCalibration, testBlock, betweenBlock],
+    timeline: [countDownScreen, calibrationBlock, endCalibration, countDownScreen, testBlock, betweenBlock],
     timeline_variables: blockLoopData
   }
 
@@ -589,6 +612,7 @@ export async function run({ assetPaths, input = {}, environment }) {
     consentScreen,
     instructionsScreen,
     startPracticeScreen,
+    countDownScreen,
     practiceBlock,
     endPractice,
     blockLoop,
