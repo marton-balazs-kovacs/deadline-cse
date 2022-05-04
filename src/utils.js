@@ -27,9 +27,14 @@ function range(stop) {
   
   // Create pseudo-random trial orders ----------------------------------------------------------
   // For the test trials
-  export function getRandomTrials(numberOfTrials, addFirstTrial) {
-    var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
-    var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+  export function getRandomTrials(numberOfTrials, task, addFirstTrial) {
+    if (task === 'stroop') {
+      var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
+      var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+    } else if (task === 'primeprobe') {
+      var redBlock = [[["ZÖLD", "black", "con", "c"], ["PIROS", "black", "con", "x"]], [["PIROS", "black", "inc", "c"], ["ZÖLD", "black", "inc", "x"]]]
+      var blueBlock = [[["KÉK", "black", "con", "n"], ["SÁRGA", "black", "con", "m"]], [["KÉK", "black", "inc", "m"], ["SÁRGA", "black", "inc", "n"]]]
+    }
   
     var repetition = numberOfTrials / 8
   
@@ -76,9 +81,15 @@ function range(stop) {
   }
 
   // For the calibration trials
-export function getRandomCalibrationTrials(numberOfTrials) {
-  var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
-  var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+export function getRandomCalibrationTrials(numberOfTrials, task) {
+  // TODO add font size
+  if (task === 'stroop') {
+    var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
+    var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+  } else if (task === 'primeprobe') {
+    var redBlock = [[["ZÖLD", "black", "con", "c"], ["PIROS", "black", "con", "x"]], [["PIROS", "black", "inc", "c"], ["ZÖLD", "black", "inc", "x"]]]
+    var blueBlock = [[["KÉK", "black", "con", "n"], ["SÁRGA", "black", "con", "m"]], [["KÉK", "black", "inc", "m"], ["SÁRGA", "black", "inc", "n"]]]
+  }
   
   const repetition = numberOfTrials / 4
 

@@ -32,6 +32,51 @@ import PreloadPlugin from "@jspsych/plugin-preload";
  * @param {{images: string[]; audio: string[]; video: string[];, misc: string[];}} options.assetPaths An object with lists of file paths for the respective `@...Dir` pragmas
  */
 export async function run({ assetPaths, input = {}, environment }) {
+  // Get task
+  // This code should be changed to jatos js once it is running on jatos see https://www.jatos.org/jatos.js-Reference.html
+  var task = 'stroop';
+
+  // Load task specific information
+  var taskData = {
+    "instructions_intro": {
+        "stroop": "Ebben a kísérletben arra vagyunk kíváncsiak, hogy az emberek hogyan oldanak fel vizuális ingerek feldolgozása közben létrejövő konfliktusokat. A kísérlet alatt különböző színű betűkkel írt színek nevei fognak felvillanni a képernyőn, ezekre itt láthatsz 2 példát:",
+        "primeprobe": ""
+    },
+    "instructions_detail": {
+        "stroop": "",
+        "primeprobe": ""
+    },
+    "mapping_finger": {
+        "stroop": "",
+        "primeprobe": ""
+    },
+    "mapping_key": {
+        "stroop": "",
+        "primeprobe": ""
+    },
+    "mapping_response": {
+        "stroop": "",
+        "primeprobe": ""
+    },
+    "start_practice": {
+        "stroop": "",
+        "primeprobe": ""
+    },
+    // array
+    "choices": {
+        "stroop": "",
+        "primeprobe": ""
+    },
+    "trial_stimulus_duration": {
+        "stroop": "",
+        "primeprobe": ""
+    },
+    "end_calibration": {
+        "stroop": "",
+        "primeprobe": ""
+    }
+}
+
   const jsPsych = initJsPsych({
     // Comment out if do not want to show data on finish
     on_finish: function() {
@@ -41,7 +86,7 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   const timeline = [];
   
-  // generate a random subject ID with 15 characters
+  // Generate a random subject ID with 15 characters
   var participant_id = jsPsych.randomization.randomID(15);
 
   // Add data to all rows of the participant
@@ -176,10 +221,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   <div>
   <h1>Instrukciók</h1>
   <p>
-    Ebben a kísérletben arra vagyunk kíváncsiak, hogy az emberek hogyan oldanak
-    fel vizuális ingerek feldolgozása közben létrejövő konfliktusokat.
-    A kísérlet alatt különböző színű betűkkel írt színek nevei fognak felvillanni a képernyőn,
-    ezekre itt láthatsz 2 példát:
+    ${taskData.instructions_intro[task]}
   </p>
   <br>
   <div style="display: inline-block;">
@@ -288,7 +330,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   // Practice phase
   // Create pseudo random practice stimuli
   // TRUE value should be 24 false
-  const practiceStimuli = getRandomTrials(4, false);
+  const practiceStimuli = getRandomTrials(4, task = task, false);
 
   // Define template for fixation cross
   var fixationCross = {
@@ -308,7 +350,7 @@ export async function run({ assetPaths, input = {}, environment }) {
     stimulus: function () {
       return `
       <div style="font-size: 36px; font-weight: bold; color: ${jsPsych.timelineVariable('color')}">
-      ${jsPsych.timelineVariable('word')}
+        ${jsPsych.timelineVariable('word')}
       </div>
       `
     },
@@ -332,6 +374,26 @@ export async function run({ assetPaths, input = {}, environment }) {
       }
     }
   };
+
+  // Define prime for the primeprobe task
+  var prime = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: function() {
+      // TODO distracter fontsize is not right should be adjusted for all tasks?
+      return `
+        <div style="display: block; color:black; font-weight:normal; font-size: 36px;">
+          ${jsPsych.timelineVariable('prime')}<br>
+          ${jsPsych.timelineVariable('prime')}<br>
+          ${jsPsych.timelineVariable('prime')}<br>
+        </div>`
+    },
+    choices: "NO_KEYS",
+    trial_duration: 166,
+    stimulus_duration: 133,
+    data: {
+      task: 'prime'
+    }
+  }
 
   // Define a template for a feedback trial
   var feedback = {
@@ -371,10 +433,17 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
-  var practiceBlock = {
-    timeline: [fixationCross, practiceTrial, feedback],
-    timeline_variables: practiceStimuli
+  // Define timeline based on task
+  if (task === 'stroop') {
+    var practiceBlockTimeline = [fixationCross, practiceTrial, feedback];
+  } else if (task === 'primeprobe') {
+    var practiceBlockTimeline = [prime, practiceTrial, feedback];
   }
+  
+  var practiceBlock = {
+    timeline: practiceBlockTimeline,
+    timeline_variables: practiceStimuli
+  };
 
   // End practice phase
   var endPractice = {
@@ -399,10 +468,10 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   // Calibration phase
   const blockLoopData = [
-    { blockId: '1', testStimuli: getRandomTrials(4, true), calibrationStimuli: getRandomCalibrationTrials(4) },
-    { blockId: '2', testStimuli: getRandomTrials(4, true), calibrationStimuli: getRandomCalibrationTrials(4) },
-    { blockId: '3', testStimuli: getRandomTrials(4, true), calibrationStimuli: getRandomCalibrationTrials(4) },
-    { blockId: '4', testStimuli: getRandomTrials(4, true), calibrationStimuli: getRandomCalibrationTrials(4) },
+    { blockId: '1', testStimuli: getRandomTrials(4, task = task, true), calibrationStimuli: getRandomCalibrationTrials(4, task = task) },
+    { blockId: '2', testStimuli: getRandomTrials(4, task = task, true), calibrationStimuli: getRandomCalibrationTrials(4, task = task) },
+    { blockId: '3', testStimuli: getRandomTrials(4, task = task, true), calibrationStimuli: getRandomCalibrationTrials(4, task = task) },
+    { blockId: '4', testStimuli: getRandomTrials(4, task = task, true), calibrationStimuli: getRandomCalibrationTrials(4, task = task) },
   ];
 
   var index = 0;
@@ -441,8 +510,15 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
+  // Define timeline based on task
+  if (task === 'stroop') {
+    var calibrationBlockTimeline  = [fixationCross, calibrationTrial]
+  } else if (task === 'primeprobe') {
+    var calibrationBlockTimeline  = [fixationCross, prime, calibrationTrial]
+  }
+
   var calibrationBlock = {
-    timeline: [fixationCross, calibrationTrial],
+    timeline: calibrationBlockTimeline,
     data: {
       block_id: function() {
         jsPsych.timelineVariable('blockId')
@@ -487,6 +563,8 @@ export async function run({ assetPaths, input = {}, environment }) {
       if (deadline === undefined) {
         jsPsych.endExperiment("A kísérlet végetért, mert túl sok hibát követtél el az 'A' rész alatt. Kérlek, hogy vedd fel a kapcsolatot a kísérletvezetővel.");
       }
+      // For primeprobe add prime time
+      deadline = deadline + 166
     }
 };
 
@@ -527,8 +605,15 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
+  // Define timeline by task
+  if (task === 'stroop') {
+    var testBlockTimeline = [fixationCross, testTrial]
+  } else if (task === 'primeprobe') {
+    var testBlockTimeline = [prime, testTrial]
+  }
+
   var testBlock = {
-    timeline: [fixationCross, testTrial],
+    timeline: testBlockTimeline,
     data: {
       block_id: function() {
         jsPsych.timelineVariable('blockId')
