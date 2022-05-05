@@ -449,7 +449,7 @@ export async function run({ assetPaths, input = {}, environment }) {
       }
     },
     loop_function() {
-      if (index == blockLoopData[jsPsych.timelineVariable('blockId')].calibrationStimuli.length) {
+      if (index == blockLoopData[jsPsych.timelineVariable('blockId') - 1]) {
         return false;
       } else {
         return true;
@@ -578,7 +578,11 @@ export async function run({ assetPaths, input = {}, environment }) {
   }
 
   var blockLoop = {
-    timeline: [countDownScreen, calibrationBlock, endCalibration, countDownScreen, testBlock, betweenBlock],
+    timeline: [
+      // countDownScreen,
+      calibrationBlock, endCalibration,
+      // countDownScreen, testBlock,
+      betweenBlock],
     timeline_variables: blockLoopData
   }
 
@@ -608,13 +612,13 @@ export async function run({ assetPaths, input = {}, environment }) {
   };
 
   timeline.push(
-    informedScreen,
-    consentScreen,
-    instructionsScreen,
-    startPracticeScreen,
-    countDownScreen,
-    practiceBlock,
-    endPractice,
+    // informedScreen,
+    // consentScreen,
+    // instructionsScreen,
+    // startPracticeScreen,
+    // countDownScreen,
+    // practiceBlock,
+    // endPractice,
     blockLoop,
     endExperiment
   );
