@@ -32,8 +32,8 @@ function range(stop) {
       var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
       var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
     } else if (task === 'primeprobe') {
-      var redBlock = [[["ZÖLD", "black", "con", "c"], ["PIROS", "black", "con", "x"]], [["PIROS", "black", "inc", "c"], ["ZÖLD", "black", "inc", "x"]]]
-      var blueBlock = [[["KÉK", "black", "con", "n"], ["SÁRGA", "black", "con", "m"]], [["KÉK", "black", "inc", "m"], ["SÁRGA", "black", "inc", "n"]]]
+      var redBlock = [[["LE", "LE", "con", "n", "black"], ["FEL", "FEL", "con", "j", "black"]], [["FEL", "LE", "inc", "j", "black"], ["LE", "FEL", "inc", "n", "black"]]]
+      var blueBlock = [[["BAL", "BAL", "con", "x", "black"], ["JOBB", "JOBB", "con", "c", "black"]], [["BAL", "JOBB", "inc", "x", "black"], ["JOBB", "BAL", "inc", "c", "black"]]]
     }
   
     var repetition = numberOfTrials / 8
@@ -68,7 +68,11 @@ function range(stop) {
   
     var loopData = []
     trialList.forEach(element => {
-      loopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+      if (task === 'stroop') {
+        loopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+      } else if (task === 'primeprobe') {
+        loopData.push({ word: element[0], prime: element[1], congruency: element[2], correctResponse: element[3], color: element[4] });
+      }
     });
   
     // Add one random in the beginning as the first trial
@@ -87,8 +91,8 @@ export function getRandomCalibrationTrials(numberOfTrials, task) {
     var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
     var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
   } else if (task === 'primeprobe') {
-    var redBlock = [[["ZÖLD", "black", "con", "c"], ["PIROS", "black", "con", "x"]], [["PIROS", "black", "inc", "c"], ["ZÖLD", "black", "inc", "x"]]]
-    var blueBlock = [[["KÉK", "black", "con", "n"], ["SÁRGA", "black", "con", "m"]], [["KÉK", "black", "inc", "m"], ["SÁRGA", "black", "inc", "n"]]]
+    var redBlock = [[["LE", "LE", "con", "n", "black"], ["FEL", "FEL", "con", "j", "black"]], [["FEL", "LE", "inc", "j", "black"], ["LE", "FEL", "inc", "n", "black"]]]
+    var blueBlock = [[["BAL", "BAL", "con", "x", "black"], ["JOBB", "JOBB", "con", "c", "black"]], [["BAL", "JOBB", "inc", "x", "black"], ["JOBB", "BAL", "inc", "c", "black"]]]
   }
   
   const repetition = numberOfTrials / 4
@@ -119,7 +123,11 @@ export function getRandomCalibrationTrials(numberOfTrials, task) {
 
   var calibrationLoopData = []
   trialCalibrationList.forEach(element => {
-    calibrationLoopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+    if (task === 'stroop') {
+      calibrationLoopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+    } else if (task === 'primeprobe') {
+      calibrationLoopData.push({ word: element[0], prime: element[1], congruency: element[2], correctResponse: element[3], color: element[4] });
+    }
   })
 
   return calibrationLoopData

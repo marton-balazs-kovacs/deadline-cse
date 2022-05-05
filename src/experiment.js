@@ -34,17 +34,18 @@ import PreloadPlugin from "@jspsych/plugin-preload";
 export async function run({ assetPaths, input = {}, environment }) {
   // Get task
   // This code should be changed to jatos js once it is running on jatos see https://www.jatos.org/jatos.js-Reference.html
+  // If you want to send the task in jatos query url use jatos.urlQueryParameters.task
   var task = 'stroop';
-
+  
   // Load task specific information
   var taskData = {
     "instructions_intro": {
         "stroop": "Ebben a kísérletben arra vagyunk kíváncsiak, hogy az emberek hogyan oldanak fel vizuális ingerek feldolgozása közben létrejövő konfliktusokat. A kísérlet alatt különböző színű betűkkel írt színek nevei fognak felvillanni a képernyőn, ezekre itt láthatsz 2 példát:",
-        "primeprobe": ""
+        "primeprobe": "Ebben a kísérletben arra vagyunk kíváncsiak, hogy az emberek hogyan figyelnek a vizuális ingerekre. Minden próbában először három azonos szót fogsz látni egymás fölött a képernyő közepén. A három szó minden próbában csak Fel, Le, Bal és Jobb lehet. A három szó nagyon gyorsan fog felvillanni, majd eltűnni. Ezután egy szót fogsz látni a képernyő közepén. Ez a szó is Bal, Jobb, Fel vagy Le lesz."
     },
     "instructions_detail": {
-        "stroop": "",
-        "primeprobe": ""
+        "stroop": "A feladatod az lesz, hogy meghatározd, milyen színnel van írva a szó, miközben a szó jelentését figyelmen kívül hagyod. Tehát a fenti 2 példára a helyes válaszok a piros és a sárga. Mindegyik szín négy válaszbillentyű (x; c; n; m) valamelyikéhez lesz hozzárendelve. Azt, hogy melyik szín melyik válaszbillentyűhöz tartozik, később, a gyakorló rész alatt lesz alkalmad megtanulni. Kérünk, hogy olyan gyorsan válaszolj, amennyire ez lehetséges hibázás nélkül!",
+        "primeprobe": "A feladatod az lesz, hogy beazonosítsd az egyedül álló szót (ne a három szót, ami előtte jelenik meg). Ha az egyedül álló szó Bal, akkor nyomd meg az f billentyűt a bal középső ujjaddal! Ha az egyedül álló szó Jobb, akkor nyomd meg a g billentyűt a bal mutatóujjaddal! Ha az egyedül álló szó Fel, akkor nyomd meg a j billentyűt a jobb középső ujjaddal! Ha az egyedül álló szó Le, nyomd meg az n billentyűt a jobb mutatóujjaddal! Minden próbában próbálj meg olyan gyorsan válaszolni, amennyire lehetséges hibázás nélkül! A kísérleti blokkokban a felvillanó szavakon kívül képeket is fogsz látni. Ezeknél semmilyen gombot nem kell megnyomnod, csak figyeld meg a képeket a lehető legjobban. Figyelem, némelyik kép bizonyos személyekben erős érzelmeket kelthet!"
     },
     "mapping_finger": {
         "stroop": "",
@@ -229,12 +230,7 @@ export async function run({ assetPaths, input = {}, environment }) {
     <h1 style="color: yellow;">KÉK</h1>
   </div>
   <p>
-    A feladatod az lesz, hogy meghatározd, milyen színnel van írva a szó,
-    miközben a szó jelentését figyelmen kívül hagyod. Tehát a fenti 2 példára
-    a helyes válaszok a piros és a sárga. Mindegyik szín négy válaszbillentyű (x; c; n; m)
-    valamelyikéhez lesz hozzárendelve. Azt, hogy melyik szín melyik válaszbillentyűhöz tartozik,
-    később, a gyakorló rész alatt lesz alkalmad megtanulni. Kérünk, hogy olyan gyorsan válaszolj,
-    amennyire ez lehetséges hibázás nélkül!
+  ${taskData.instructions_detail[task]}
   </p>
   <p>
     A gyakorlást követően a kísérlet 4 szakaszból fog állni, ezek mindegyike 2 részre ('A' és 'B') oszlik.
@@ -475,14 +471,13 @@ export async function run({ assetPaths, input = {}, environment }) {
   ];
 
   var index = 0;
-
+  
   // Define a template for a calibration stroop trial
   var calibrationTrial = {
     type: HtmlKeyboardResponsePlugin,
     stimulus: function () {
       var block_data = jsPsych.timelineVariable('calibrationStimuli')
       var trial_data = block_data[index]
-
       return `<div style="font-size: 36px; font-weight: bold; color: ${trial_data.color}">
             ${trial_data.word}
             </div>`
@@ -560,11 +555,12 @@ export async function run({ assetPaths, input = {}, environment }) {
     on_start: function () {
       index = 0;
       var deadline = jsPsych.data.get().filter({task: 'calibration_trial', correct: true}).select('rt').mean();
+
       if (deadline === undefined) {
         jsPsych.endExperiment("A kísérlet végetért, mert túl sok hibát követtél el az 'A' rész alatt. Kérlek, hogy vedd fel a kapcsolatot a kísérletvezetővel.");
       }
       // For primeprobe add prime time
-      deadline = deadline + 166
+      // deadline = deadline + 166
     }
 };
 
@@ -663,7 +659,10 @@ export async function run({ assetPaths, input = {}, environment }) {
   }
 
   var blockLoop = {
-    timeline: [countDownScreen, calibrationBlock, endCalibration, countDownScreen, testBlock, betweenBlock],
+    timeline: [countDownScreen, calibrationBlock, endCalibration,
+      // countDownScreen, testBlock,
+      betweenBlock
+    ],
     timeline_variables: blockLoopData
   }
 
@@ -694,12 +693,12 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   timeline.push(
     informedScreen,
-    consentScreen,
-    instructionsScreen,
-    startPracticeScreen,
-    countDownScreen,
-    practiceBlock,
-    endPractice,
+    // consentScreen,
+    // instructionsScreen,
+    // startPracticeScreen,
+    // countDownScreen,
+    // practiceBlock,
+    // endPractice,
     blockLoop,
     endExperiment
   );
