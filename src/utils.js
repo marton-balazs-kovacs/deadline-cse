@@ -33,7 +33,7 @@ function range(stop) {
       var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
     } else if (task === 'primeprobe') {
       var redBlock = [[["LE", "LE", "con", "n", "black"], ["FEL", "FEL", "con", "j", "black"]], [["FEL", "LE", "inc", "j", "black"], ["LE", "FEL", "inc", "n", "black"]]]
-      var blueBlock = [[["BAL", "BAL", "con", "x", "black"], ["JOBB", "JOBB", "con", "c", "black"]], [["BAL", "JOBB", "inc", "x", "black"], ["JOBB", "BAL", "inc", "c", "black"]]]
+      var blueBlock = [[["BAL", "BAL", "con", "f", "black"], ["JOBB", "JOBB", "con", "g", "black"]], [["BAL", "JOBB", "inc", "f", "black"], ["JOBB", "BAL", "inc", "g", "black"]]]
     }
   
     var repetition = numberOfTrials / 8
@@ -78,7 +78,11 @@ function range(stop) {
     // Add one random in the beginning as the first trial
     if (addFirstTrial) {
       const firstTrial = blueBlock[Math.floor(Math.random() * 2)][Math.floor(Math.random() * 2)]
-      loopData.unshift({ word: firstTrial[0], color: firstTrial[1], congruency: firstTrial[2], correctResponse: firstTrial[3] })
+      if (task === 'stroop') {
+        loopData.unshift({ word: firstTrial[0], color: firstTrial[1], congruency: firstTrial[2], correctResponse: firstTrial[3] });
+      } else if (task === 'primeprobe') {
+        loopData.unshift({ word: firstTrial[0], prime: firstTrial[1], color: firstTrial[2], congruency: firstTrial[3], correctResponse: firstTrial[4] });
+      }
     }
   
     return loopData
@@ -92,7 +96,7 @@ export function getRandomCalibrationTrials(numberOfTrials, task) {
     var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
   } else if (task === 'primeprobe') {
     var redBlock = [[["LE", "LE", "con", "n", "black"], ["FEL", "FEL", "con", "j", "black"]], [["FEL", "LE", "inc", "j", "black"], ["LE", "FEL", "inc", "n", "black"]]]
-    var blueBlock = [[["BAL", "BAL", "con", "x", "black"], ["JOBB", "JOBB", "con", "c", "black"]], [["BAL", "JOBB", "inc", "x", "black"], ["JOBB", "BAL", "inc", "c", "black"]]]
+    var blueBlock = [[["BAL", "BAL", "con", "f", "black"], ["JOBB", "JOBB", "con", "g", "black"]], [["BAL", "JOBB", "inc", "f", "black"], ["JOBB", "BAL", "inc", "g", "black"]]]
   }
   
   const repetition = numberOfTrials / 4

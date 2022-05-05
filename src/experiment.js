@@ -22,6 +22,7 @@ import FullscreenPlugin from "@jspsych/plugin-fullscreen";
 import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
 import HtmlButtonResponsePlugin from "@jspsych/plugin-html-button-response"
 import PreloadPlugin from "@jspsych/plugin-preload";
+import SurveyTextPlugin from "@jspsych/plugin-survey-text";
 
 /**
  * This method will be executed by jsPsych Builder and is expected to run the jsPsych experiment
@@ -45,43 +46,33 @@ export async function run({ assetPaths, input = {}, environment }) {
     },
     "instructions_detail": {
         "stroop": "A feladatod az lesz, hogy meghatározd, milyen színnel van írva a szó, miközben a szó jelentését figyelmen kívül hagyod. Tehát a fenti 2 példára a helyes válaszok a piros és a sárga. Mindegyik szín négy válaszbillentyű (x; c; n; m) valamelyikéhez lesz hozzárendelve. Azt, hogy melyik szín melyik válaszbillentyűhöz tartozik, később, a gyakorló rész alatt lesz alkalmad megtanulni. Kérünk, hogy olyan gyorsan válaszolj, amennyire ez lehetséges hibázás nélkül!",
-        "primeprobe": "A feladatod az lesz, hogy beazonosítsd az egyedül álló szót (ne a három szót, ami előtte jelenik meg). Ha az egyedül álló szó Bal, akkor nyomd meg az f billentyűt a bal középső ujjaddal! Ha az egyedül álló szó Jobb, akkor nyomd meg a g billentyűt a bal mutatóujjaddal! Ha az egyedül álló szó Fel, akkor nyomd meg a j billentyűt a jobb középső ujjaddal! Ha az egyedül álló szó Le, nyomd meg az n billentyűt a jobb mutatóujjaddal! Minden próbában próbálj meg olyan gyorsan válaszolni, amennyire lehetséges hibázás nélkül! A kísérleti blokkokban a felvillanó szavakon kívül képeket is fogsz látni. Ezeknél semmilyen gombot nem kell megnyomnod, csak figyeld meg a képeket a lehető legjobban. Figyelem, némelyik kép bizonyos személyekben erős érzelmeket kelthet!"
-    },
-    "mapping_finger": {
-        "stroop": "",
-        "primeprobe": ""
+        "primeprobe": "A feladatod az lesz, hogy minden próba során beazonosítsd a másodikként felvillanó, egyedülálló szót (ne az elsőként felvillanó három szót), és arra reagálj a megfelelő billentyű megnyomásával. Az egyes szavakhoz tartozó billentyűket a következő oldalon lévő táblázatban láthatod. Igyekezz minden próbánál olyan gyorsan válaszolni, amennyire hibázás nélkül lehetséges!"
     },
     "mapping_key": {
-        "stroop": "",
-        "primeprobe": ""
+        "stroop": ["x", "c", "n", "m"],
+        "primeprobe": ["f", "g", "n", "j"]
     },
-    "mapping_response": {
-        "stroop": "",
-        "primeprobe": ""
+    "mapping_stimulus": {
+        "stroop": ["PIROS", "ZÖLD", "KÉK", "SÁRGA"],
+        "primeprobe": ["BAL", "JOBB", "LE", "FEL"]
     },
     "start_practice": {
-        "stroop": "",
-        "primeprobe": ""
-    },
-    // array
-    "choices": {
-        "stroop": "",
-        "primeprobe": ""
+        "stroop": "Az alábbi táblázatban láthatod, hogy melyik betűszínhez melyik gomb tartozik, illetve, hogy melyik gombot melyik ujjaddal kell megnyomnod. A feladatod tehát, hogy ezek alapján reagálj a felvillanó szavak betűszínére. Minden szó megjelenése előtt egy '+' jelet fogsz látni, ez jelzi, hogy a következő szóra kell készülnöd.",
+        "primeprobe": "Az alábbi táblázatban láthatod, hogy melyik szóhoz melyik gomb tartozik, illetve, hogy melyik gombot melyik ujjaddal kell megnyomnod. A feladatod tehát, hogy minden próba során ezek szerint reagálj a másodikként felvillanó szóra. Minden próba előtt egy '+' jelet fogsz látni, ez jelzi, hogy a következő próbára kell készülnöd."
     },
     "trial_stimulus_duration": {
         "stroop": "",
         "primeprobe": ""
     },
     "end_calibration": {
-        "stroop": "",
-        "primeprobe": ""
+        "stroop": "A most következő 'B' részben limitált időd lesz reagálni, ezért talán gyorsabbnak fog tűnni a feladat. Igyekezz mindig a következő szó megjelenése előtt reagálni (ha meglátod a '+' jelet, már a következő szóra kell készülnöd) és ügyelj arra, hogy helyesen válaszolj!",
+        "primeprobe": "A most következő 'B' részben limitált időd lesz reagálni, ezért talán gyorsabbnak fog tűnni a feladat. Igyekezz beleférni az időlimitbe (ha meglátod a '+' jelet, már a következő próbára kell készülnöd) és ügyelj arra, hogy helyesen válaszolj!"
     }
 }
 
   const jsPsych = initJsPsych({
-    // Comment out if do not want to show data on finish
     on_finish: function() {
-      jsPsych.data.displayData('csv');
+      on_finish: () => jatos.endStudy(jsPsych.data.get().csv());
     }
   });
 
@@ -135,7 +126,7 @@ export async function run({ assetPaths, input = {}, environment }) {
       más adatkezelőnek, adatfeldolgozónak nem adjuk át, ám az anonimizált
       (személyes azonosításra nem alkalmas) adataid más kutatókkal megosztjuk.
       E tényállás részleteit a „Hozzájárulás adatkezeléshez” c. dokumentum 
-      tartalmazza <a target="_blank" href="http://decisionlab.elte.hu/hozzajarulas-adatkezeleshez/">ITT</a>.
+      tartalmazza <a target="_blank" href="http://metasciencelab.elte.hu/hozzajarulas-adatkezeleshez">ITT</a>.
       Az adatkezelésről szóló szabályozásról részletesebben pedig
       <a target="_blank" href="https://ppk.elte.hu/file/Hozzajarulas_adatkezeleshez_melleklet_2018.pdf.">ITT</a> tájékozódhatsz.
     </p>
@@ -215,6 +206,35 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
+  // Neptun id
+  const neptun = {
+    type: SurveyTextPlugin,
+    questions: [
+      {prompt: 'Mi a NEPTUN kódod?', placeholder: 'neptun', required: true}
+    ]
+  }
+
+  // Example
+  if (task === 'stroop') {
+    var example = `
+    <div style="display: inline-block;">
+      <h1 style="color:red;">PIROS</h1>
+      <h1 style="color: yellow;">KÉK</h1>
+    </div>`
+  } else if (task === 'primeprobe') {
+    var example = `
+    <div style="width: 50%; display: inline-block;">
+      <div style="float: left; width: 50%; padding-top:60px; padding-bottom:60px; text-align:center; vertical-align: middle;">
+        <h1 style="color:black;">Le</h1>
+      </div>
+      <div style="float: left; width: 50%;">
+        <h1 style="color:black;">Fel</h1>
+        <h1 style="color:black;">Fel</h1>
+        <h1 style="color:black;">Fel</h1>
+      </div>      
+    </div>`
+  }
+
   // Create instructions
   const instructionsScreen = {
     type: HtmlKeyboardResponsePlugin,
@@ -225,10 +245,8 @@ export async function run({ assetPaths, input = {}, environment }) {
     ${taskData.instructions_intro[task]}
   </p>
   <br>
-  <div style="display: inline-block;">
-    <h1 style="color:red;">PIROS</h1>
-    <h1 style="color: yellow;">KÉK</h1>
-  </div>
+  ${example}
+  <br>
   <p>
   ${taskData.instructions_detail[task]}
   </p>
@@ -237,14 +255,13 @@ export async function run({ assetPaths, input = {}, environment }) {
     A 4 szakasz egyenként kb. 8 percet vesz igénybe, közöttük rövid szünetet tarthatsz.
   </p>
   <p>
-    Kérünk, hogy a feladatot számítógépen végezd el (ne telefonon, tableten stb.)!  A kísérlet csak Mozilla Firefox
-    és Safari böngészőkben működik megfelelően, ezért kérünk, hogy ezek valamelyikében végezd el, egy új böngészőablakban!
+    Kérünk, hogy a feladatot számítógépen végezd el (ne telefonon, tableten stb.)!
     Nagyon fontos, hogy a kísérlet során végig tudj összpontosítani, ezért kérünk, hogy ne csinálj semmi mást,
-    miközben a feladatot csinálod! Vedd figyelembe, hogy ha a megoldásod pontossága 70%-nál alacsonyabb
-    lesz, ami egy ésszerű határ az előző kutatások fényében, akkor nem kapsz pontot a kitöltésért.
-    Ha 70% feletti pontossággal oldod meg a feladatot, valamint, ha elvégzed a feladat másik verzióját is,
-    akkor 1.5 pontot kapsz a „Pszichológiai kísérletben és tudományos aktivitásban való részvétel” nevű kurzuson.
-    Ehhez ne felejtsd el megadni a Neptun-kódod a kísérlet végén!
+    miközben a feladatot csinálod! Ha 70% feletti pontossággal oldod meg a feladatot, valamint, ha elvégzed a feladat mindkét részét,
+    akkor 2 pontot kapsz a „Pszichológiai kísérletben és tudományos aktivitásban való részvétel” nevű kurzuson.
+    Ha a megoldásod pontossága 70%-nál alacsonyabb lesz (ami egy ésszerű határ az előző kutatások fényében),
+    illetve ha csak az egyik részt teljesíted, akkor nem kapsz pontot a kitöltésért.
+    Ne felejtsd el megadni a Neptun-kódod a kísérlet végén, hogy beírhassuk a pontjaid!
   </p>
   Nyomd meg a Space billentyűt a folytatáshoz!
   </div>
@@ -262,23 +279,23 @@ export async function run({ assetPaths, input = {}, environment }) {
 </tr>
 <tr style="font-weight: normal;">
   <td>bal középső</td>
-  <td>x</td>
-  <td>piros</td>
+  <td>${taskData.mapping_key[task][0]}</td>
+  <td>${taskData.mapping_stimulus[task][0]}</td>
 </tr>
 <tr style="font-weight: normal;">
   <td>bal mutató</td>
-  <td>c</td>
-  <td>zöld</td>
+  <td>${taskData.mapping_key[task][1]}</td>
+  <td>${taskData.mapping_stimulus[task][1]}</td>
 </tr>
 <tr style="font-weight: normal;">
   <td>jobb mutató</td>
-  <td>n</td>
-  <td>kék</td>
+  <td>${taskData.mapping_key[task][2]}</td>
+  <td>${taskData.mapping_stimulus[task][2]}</td>
 </tr>
 <tr style="font-weight: normal;">
   <td>jobb középső</td>
-  <td>m</td>
-  <td>sárga</td>
+  <td>${taskData.mapping_key[task][3]}</td>
+  <td>${taskData.mapping_stimulus[task][3]}</td>
 </tr>
 </table>
 `
@@ -310,10 +327,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   <div>
   <h2>Gyakorlás</2>
   <p style="font-weight: normal;">
-    Az alábbi táblázatban láthatod, hogy melyik betűszínhez melyik gomb tartozik,
-    illetve, hogy melyik gombot melyik ujjaddal kell megnyomnod.
-    A feladatod tehát, hogy ezek alapján reagálj a felvillanó szavak betűszínére.
-    Minden szó megjelenése előtt egy '+' jelet fogsz látni, ez jelzi, hogy a következő szóra kell készülnöd.
+    ${taskData.start_practice[task]}
   </p>
   <p>A gyakorlás megkezdéséhez helyezd az ujjaid a megfelelő gombokra és nyomd meg a Space billentyűt!</p>
   <br>
@@ -339,6 +353,12 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
+  if (task === 'stroop') {
+   var helpBar = `x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>` 
+  } else if (task === 'primeprobe') {
+    var helpBar = `f = <span style="font-weight: bold;">BAL</span> g = <span style="font-weight: bold;">JOBB</span>  n = <span style="font-weight: bold;">LE</span>  j = <span style="font-weight: bold;">FEL</span>`
+  }
+
   var practiceTrial = {
     // Define a template for a practice stroop trial
     type: HtmlKeyboardResponsePlugin,
@@ -350,12 +370,13 @@ export async function run({ assetPaths, input = {}, environment }) {
       </div>
       `
     },
-    choiches: ['x', 'c', 'n', 'm'],
+    choices: taskData.mapping_key[task],
     trial_duration: null,
     stimulus_duration: 250,
     prompt: `
-        <div style="display: inline-block; color:black; font-weight:normal; font-size: 36px;">
-          x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>
+        <br>
+        <div style="display: inline-block; color:black; font-weight:normal; font-size: 30px;">
+          ${helpBar}
         </div>`,
     data: {
       task: 'practice_trial',
@@ -371,13 +392,12 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
-  // Define prime for the primeprobe task
-  var prime = {
+  // Define prime for the primeprobe task for practice
+  var primePractice = {
     type: HtmlKeyboardResponsePlugin,
     stimulus: function() {
-      // TODO distracter fontsize is not right should be adjusted for all tasks?
       return `
-        <div style="display: block; color:black; font-weight:normal; font-size: 36px;">
+        <div style="display: block; color:black; font-weight:bold; font-size: 30px;">
           ${jsPsych.timelineVariable('prime')}<br>
           ${jsPsych.timelineVariable('prime')}<br>
           ${jsPsych.timelineVariable('prime')}<br>
@@ -404,24 +424,21 @@ export async function run({ assetPaths, input = {}, environment }) {
         return `
           <div style="font-size: 36px; font-weight: bold; color: grey;">
             Helyes
-            <br>
-            <div style="display: inline-block; color:black; font-weight:normal;">
-              x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>
-            </div>
           </div>`; 
         // the parameter value has to be returned from the function
       } else {
         return `
         <div style="font-size: 36px; font-weight: bold; color: grey;">
           Helytelen
-          <br>
-          <div style="display: inline-block; color:black; font-weight:normal;">
-            x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>
-          </div>
         </div>`; 
         // the parameter value has to be returned from the function
       }
     },
+    prompt: `
+    <br>
+    <div style="display: inline-block; color:black; font-weight:normal; font-size: 30px;">
+      ${helpBar}
+    </div>`,
     choices: "NO_KEYS",
     trial_duration: 1000,
     data: {
@@ -433,7 +450,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   if (task === 'stroop') {
     var practiceBlockTimeline = [fixationCross, practiceTrial, feedback];
   } else if (task === 'primeprobe') {
-    var practiceBlockTimeline = [prime, practiceTrial, feedback];
+    var practiceBlockTimeline = [primePractice, practiceTrial, feedback];
   }
   
   var practiceBlock = {
@@ -471,25 +488,27 @@ export async function run({ assetPaths, input = {}, environment }) {
   ];
 
   var index = 0;
+  var block_data
+  var trial_data
   
   // Define a template for a calibration stroop trial
   var calibrationTrial = {
     type: HtmlKeyboardResponsePlugin,
     stimulus: function () {
-      var block_data = jsPsych.timelineVariable('calibrationStimuli')
-      var trial_data = block_data[index]
+      block_data = jsPsych.timelineVariable('calibrationStimuli')
+      trial_data = block_data[index]
       return `<div style="font-size: 36px; font-weight: bold; color: ${trial_data.color}">
             ${trial_data.word}
             </div>`
     },
-    choiches: ['x', 'c', 'n', 'm'],
+    choices: taskData.mapping_key[task],
     trial_duration: null,
     stimulus_duration: 250,
     data: {
       task: 'calibration_trial',
-      correct_response: function() {
-        var block_data = jsPsych.timelineVariable('calibrationStimuli')
-        var trial_data = block_data[index]
+      correct_response: function () {
+        block_data = jsPsych.timelineVariable('calibrationStimuli')
+        trial_data = block_data[index]
         return trial_data.correctResponse
       }
     },
@@ -505,11 +524,33 @@ export async function run({ assetPaths, input = {}, environment }) {
     }
   };
 
+  // Define prime for the primeprobe task for test
+  var primeCalibration = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: function () {
+      block_data = jsPsych.timelineVariable('calibrationStimuli');
+      trial_data = block_data[index];
+
+      return `
+          <div style="display: block; color:black; font-weight: bold; font-size: 30px;">
+            ${trial_data.prime}<br>
+            ${trial_data.prime}<br>
+            ${trial_data.prime}<br>
+          </div>`
+    },
+    choices: "NO_KEYS",
+    trial_duration: 166,
+    stimulus_duration: 133,
+    data: {
+      task: 'prime'
+    }
+  }
+
   // Define timeline based on task
   if (task === 'stroop') {
     var calibrationBlockTimeline  = [fixationCross, calibrationTrial]
   } else if (task === 'primeprobe') {
-    var calibrationBlockTimeline  = [fixationCross, prime, calibrationTrial]
+    var calibrationBlockTimeline  = [primeCalibration, calibrationTrial]
   }
 
   var calibrationBlock = {
@@ -537,9 +578,7 @@ export async function run({ assetPaths, input = {}, environment }) {
           <div>
             <h2>'A' rész vége</h2>
             <p>
-              A most következő 'B' részben limitált időd lesz reagálni, ezért talán gyorsabbnak fog tűnni a feladat.
-              Igyekezz mindig a következő szó megjelenése előtt reagálni (ha meglátod a '+' jelet, már a következő szóra kell készülnöd)
-              és ügyelj arra, hogy helyesen válaszolj!
+              ${taskData.instructions_detail[task]}
               <br>
               Továbbra is tartsd az ujjaid a megfelelő gombokon és nyomd meg a Space billentyűt a 'B' rész megkezdéséhez!
             </p>
@@ -554,38 +593,62 @@ export async function run({ assetPaths, input = {}, environment }) {
     },
     on_start: function () {
       index = 0;
-      var deadline = jsPsych.data.get().filter({task: 'calibration_trial', correct: true}).select('rt').mean();
+      deadline = jsPsych.data.get().filter({task: 'calibration_trial', correct: true}).select('rt').mean();
+      deadline = Math.ceil(deadline)
 
       if (deadline === undefined) {
         jsPsych.endExperiment("A kísérlet végetért, mert túl sok hibát követtél el az 'A' rész alatt. Kérlek, hogy vedd fel a kapcsolatot a kísérletvezetővel.");
       }
       // For primeprobe add prime time
-      // deadline = deadline + 166
+      if (task === 'primeprobe') {
+        deadline = deadline + 166
+        console.log(deadline)
+      }
     }
 };
 
   // Test phase
+  // Define prime for the primeprobe task for test
+  var primeTest = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: function () {
+      block_data = jsPsych.timelineVariable('testStimuli')
+      trial_data = block_data[index]
+
+      return `
+            <div style="display: block; color:black; font-weight: bold; font-size: 30px;">
+              ${trial_data.prime}<br>
+              ${trial_data.prime}<br>
+              ${trial_data.prime}<br>
+            </div>`
+    },
+    choices: "NO_KEYS",
+    trial_duration: 166,
+    stimulus_duration: 133,
+    data: {
+      task: 'prime'
+    }
+  }
+
   var testTrial = {
     // Define a template for a test stroop trial
     type: HtmlKeyboardResponsePlugin,
     // HTML template for test trial
     stimulus: function () {
-      var block_data = jsPsych.timelineVariable('testStimuli')
-      var trial_data = block_data[index]
+      block_data = jsPsych.timelineVariable('testStimuli')
+      trial_data = block_data[index]
 
       return `<div style="font-size: 36px; font-weight: bold; color: ${trial_data.color}">
       ${trial_data.word}
       </div>`
     },
-    choiches: ['x', 'c', 'n', 'm'],
-    // trial duration is set by the personal deadline of the participant per block
-    trial_duration: deadline,
+    choices: taskData.mapping_key[task],
     stimulus_duration: 250,
     data: {
       task: 'test_trial',
       correct_response: function() {
-        var block_data = jsPsych.timelineVariable('testStimuli')
-        var trial_data = block_data[index]
+        block_data = jsPsych.timelineVariable('testStimuli')
+        trial_data = block_data[index]
         return trial_data.correctResponse
       }
     },
@@ -598,6 +661,10 @@ export async function run({ assetPaths, input = {}, environment }) {
       }
 
       index++
+    },
+    on_start: function(trial) {
+      // trial duration is set by the personal deadline of the participant per block
+      trial.trial_duration = deadline;
     }
   };
 
@@ -605,7 +672,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   if (task === 'stroop') {
     var testBlockTimeline = [fixationCross, testTrial]
   } else if (task === 'primeprobe') {
-    var testBlockTimeline = [prime, testTrial]
+    var testBlockTimeline = [primeTest, testTrial]
   }
 
   var testBlock = {
@@ -675,32 +742,35 @@ export async function run({ assetPaths, input = {}, environment }) {
     <div>
     <h1>Kész</h1>
     <p>
-      A kísérlet véget ért, 80%-os pontossággal teljesítetted a tesztet. Köszönjük a részvételt!
+      Köszönjük a részvételt!
     </p>
     <p>
       A kutatásban való részvételedet a Neptun-kódod megadásával igazolhatod,
-      amit <a target="_blank" href="https://forms.gle/HxaQDSy5wdsStJyM8">ERRE</a> a linkre kattintva tudsz megtenni. Ne feledd, hogy csak akkor kapod meg a pontot,
+      amit <a target="_blank" href="https://forms.gle/k7utRzfUPwJjTjRt6">ERRE</a> a linkre kattintva tudsz megtenni. Ne feledd, hogy csak akkor kapod meg a pontot,
       ha a feladat mindkét verzióját teljesíted és mind a kétszer megadod a Neptun-kódodat!
     </p>
     <p>
       Ha bármi kérdésed vagy megjegyzésed van, kérlek, vedd fel a kapcsolatot Székely Zsuzsával, a kutatás vezetőjével ezen az email címen: szekely.zsuzsa.mail@gmail.com!
     </p>
+    <p style="color: red; font-weight: bold;">
+    Nyomj meg egy gombot, hogy befejezd a kísérletet és rögzítsd az eredményed.
+    </p>
     </div>
     `,
-    choices: [" "],
     data: {
       task: 'end_experiment'
     }
   };
 
   timeline.push(
-    // informedScreen,
-    // consentScreen,
-    // instructionsScreen,
-    // startPracticeScreen,
-    // countDownScreen,
-    // practiceBlock,
-    // endPractice,
+    informedScreen,
+    consentScreen,
+    neptun,
+    instructionsScreen,
+    startPracticeScreen,
+    countDownScreen,
+    practiceBlock,
+    endPractice,
     blockLoop,
     endExperiment
   );
