@@ -27,9 +27,14 @@ function range(stop) {
   
   // Create pseudo-random trial orders ----------------------------------------------------------
   // For the test trials
-  export function getRandomTrials(numberOfTrials, addFirstTrial) {
-    var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
-    var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+  export function getRandomTrials(numberOfTrials, task, addFirstTrial) {
+    if (task === 'stroop') {
+      var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
+      var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+    } else if (task === 'primeprobe') {
+      var redBlock = [[["LE", "LE", "con", "n", "black"], ["FEL", "FEL", "con", "j", "black"]], [["FEL", "LE", "inc", "j", "black"], ["LE", "FEL", "inc", "n", "black"]]]
+      var blueBlock = [[["BAL", "BAL", "con", "f", "black"], ["JOBB", "JOBB", "con", "g", "black"]], [["BAL", "JOBB", "inc", "f", "black"], ["JOBB", "BAL", "inc", "g", "black"]]]
+    }
   
     var repetition = numberOfTrials / 8
   
@@ -63,22 +68,36 @@ function range(stop) {
   
     var loopData = []
     trialList.forEach(element => {
-      loopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+      if (task === 'stroop') {
+        loopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+      } else if (task === 'primeprobe') {
+        loopData.push({ word: element[0], prime: element[1], congruency: element[2], correctResponse: element[3], color: element[4] });
+      }
     });
   
     // Add one random in the beginning as the first trial
     if (addFirstTrial) {
       const firstTrial = blueBlock[Math.floor(Math.random() * 2)][Math.floor(Math.random() * 2)]
-      loopData.unshift({ word: firstTrial[0], color: firstTrial[1], congruency: firstTrial[2], correctResponse: firstTrial[3] })
+      if (task === 'stroop') {
+        loopData.unshift({ word: firstTrial[0], color: firstTrial[1], congruency: firstTrial[2], correctResponse: firstTrial[3] });
+      } else if (task === 'primeprobe') {
+        loopData.unshift({ word: firstTrial[0], prime: firstTrial[1], color: firstTrial[2], congruency: firstTrial[3], correctResponse: firstTrial[4] });
+      }
     }
   
     return loopData
   }
 
   // For the calibration trials
-export function getRandomCalibrationTrials(numberOfTrials) {
-  var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
-  var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+export function getRandomCalibrationTrials(numberOfTrials, task) {
+  // TODO add font size
+  if (task === 'stroop') {
+    var redBlock = [[["ZÖLD", "green", "con", "c"], ["PIROS", "red", "con", "x"]], [["PIROS", "green", "inc", "c"], ["ZÖLD", "red", "inc", "x"]]]
+    var blueBlock = [[["KÉK", "blue", "con", "n"], ["SÁRGA", "yellow", "con", "m"]], [["KÉK", "yellow", "inc", "m"], ["SÁRGA", "blue", "inc", "n"]]]
+  } else if (task === 'primeprobe') {
+    var redBlock = [[["LE", "LE", "con", "n", "black"], ["FEL", "FEL", "con", "j", "black"]], [["FEL", "LE", "inc", "j", "black"], ["LE", "FEL", "inc", "n", "black"]]]
+    var blueBlock = [[["BAL", "BAL", "con", "f", "black"], ["JOBB", "JOBB", "con", "g", "black"]], [["BAL", "JOBB", "inc", "f", "black"], ["JOBB", "BAL", "inc", "g", "black"]]]
+  }
   
   const repetition = numberOfTrials / 4
 
@@ -108,7 +127,11 @@ export function getRandomCalibrationTrials(numberOfTrials) {
 
   var calibrationLoopData = []
   trialCalibrationList.forEach(element => {
-    calibrationLoopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+    if (task === 'stroop') {
+      calibrationLoopData.push({ word: element[0], color: element[1], congruency: element[2], correctResponse: element[3] });
+    } else if (task === 'primeprobe') {
+      calibrationLoopData.push({ word: element[0], prime: element[1], congruency: element[2], correctResponse: element[3], color: element[4] });
+    }
   })
 
   return calibrationLoopData
