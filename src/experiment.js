@@ -36,7 +36,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   // Get task
   // This code should be changed to jatos js once it is running on jatos see https://www.jatos.org/jatos.js-Reference.html
   // If you want to send the task in jatos query url use jatos.urlQueryParameters.task
-  var task = 'stroop';
+  var task = 'primeprobe';
   
   // Load task specific information
   var taskData = {
@@ -371,7 +371,6 @@ export async function run({ assetPaths, input = {}, environment }) {
       `
     },
     choices: taskData.mapping_key[task],
-    trial_duration: null,
     stimulus_duration: 250,
     prompt: `
         <br>
@@ -388,6 +387,15 @@ export async function run({ assetPaths, input = {}, environment }) {
         data.correct = true;
       } else {
         data.correct = false;
+      }
+    },
+    on_start: function(trial) {
+      if (task === 'stroop') {
+        trial.response_ends_trial = true
+        trial.trial_duration = null
+      } else if (task === 'primeprobe') {
+        trial.response_ends_trial = false
+        trial.trial_duration = 2000
       }
     }
   };
@@ -521,6 +529,15 @@ export async function run({ assetPaths, input = {}, environment }) {
       }
 
       index++
+    },
+    on_start: function(trial) {
+      if (task === 'stroop') {
+        trial.response_ends_trial = true
+        trial.trial_duration = null
+      } else if (task === 'primeprobe') {
+        trial.response_ends_trial = false
+        trial.trial_duration = 2000
+      }
     }
   };
 
@@ -665,7 +682,13 @@ export async function run({ assetPaths, input = {}, environment }) {
     on_start: function(trial) {
       // trial duration is set by the personal deadline of the participant per block
       trial.trial_duration = deadline;
-    }
+
+      if (task === 'stroop') {
+        trial.response_ends_trial = true
+      } else if (task === 'primeprobe') {
+        trial.response_ends_trial = false
+      }
+    },
   };
 
   // Define timeline by task
