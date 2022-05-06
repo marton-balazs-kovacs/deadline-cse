@@ -551,13 +551,35 @@ export async function run({ assetPaths, input = {}, environment }) {
   var index = 0;
   var block_data
   var trial_data
-  
+
+  // Define template for fixation cross
+  var calibrationFixationCross = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: '<div style="font-size:60px; color: gray;">+</div>',
+    choices: "NO_KEYS",
+    trial_duration: 1000,
+    data: {
+      task: 'fixation'
+    },
+    save_trial_parameters: {
+      stimulus: false
+    },
+    on_start: function() {
+      block_data = jsPsych.timelineVariable('calibrationStimuli')
+      trial_data = block_data[index]
+    }
+  };
+
+  if (task === 'stroop') {
+    var helpBar = `x = <span class="dot" style="background-color:red;"></span> c = <span class="dot" style="background-color:green;"></span>  n = <span class="dot" style="background-color:blue"></span>  m = <span class="dot" style="background-color:yellow;"></span>`
+  } else if (task === 'primeprobe') {
+    var helpBar = `f = <span style="font-weight: bold;">BAL</span> g = <span style="font-weight: bold;">JOBB</span>  n = <span style="font-weight: bold;">LE</span>  j = <span style="font-weight: bold;">FEL</span>`
+  }
+
   // Define a template for a calibration stroop trial
   var calibrationTrial = {
     type: HtmlKeyboardResponsePlugin,
     stimulus: function () {
-      block_data = jsPsych.timelineVariable('calibrationStimuli')
-      trial_data = block_data[index]
       return `<div style="font-size: 36px; font-weight: bold; color: ${trial_data.color}">
             ${trial_data.word}
             </div>`
@@ -566,18 +588,12 @@ export async function run({ assetPaths, input = {}, environment }) {
     data: {
       task: 'calibration_trial',
       correct_response: function () {
-        block_data = jsPsych.timelineVariable('calibrationStimuli')
-        trial_data = block_data[index]
         return trial_data.correctResponse
       },
       color: function () {
-        block_data = jsPsych.timelineVariable('calibrationStimuli')
-        trial_data = block_data[index]
         return trial_data.color
       },
       word: function () {
-        block_data = jsPsych.timelineVariable('calibrationStimuli')
-        trial_data = block_data[index]
         return trial_data.word
       }
     },
@@ -611,9 +627,6 @@ export async function run({ assetPaths, input = {}, environment }) {
   var primeCalibration = {
     type: HtmlKeyboardResponsePlugin,
     stimulus: function () {
-      block_data = jsPsych.timelineVariable('calibrationStimuli');
-      trial_data = block_data[index];
-
       return `
           <div style="display: block; color:black; font-weight: bold; font-size: 30px;">
             ${trial_data.prime}<br>
@@ -627,8 +640,12 @@ export async function run({ assetPaths, input = {}, environment }) {
     data: {
       task: 'prime',
       prime: function() {
-        block_data = jsPsych.timelineVariable('calibrationStimuli')
-        trial_data = block_data[index]
+        // Get data for the specific trial
+        // For some reason data function is ran first, then stimulus, then on_start event
+        // As every trial is preceeded by a prime this will influence the trial
+        // data for the calibrationTrial screen as well
+        block_data = jsPsych.timelineVariable('calibrationStimuli');
+        trial_data = block_data[index];
         return trial_data.prime
       }
     },
@@ -639,7 +656,7 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   // Define timeline based on task
   if (task === 'stroop') {
-    var calibrationBlockTimeline  = [fixationCross, calibrationTrial]
+    var calibrationBlockTimeline  = [calibrationFixationCross, calibrationTrial]
   } else if (task === 'primeprobe') {
     var calibrationBlockTimeline  = [primeCalibration, calibrationTrial]
   }
@@ -680,9 +697,6 @@ export async function run({ assetPaths, input = {}, environment }) {
       task: 'end_calibration',
       block_id: function() {
         jsPsych.timelineVariable('blockId')
-      },
-      deadline: function() {
-        return deadline
       }
     },
     on_start: function () {
@@ -690,8 +704,8 @@ export async function run({ assetPaths, input = {}, environment }) {
       deadline = jsPsych.data.get().filter({task: 'calibration_trial', correct: true}).select('rt').mean();
       deadline = Math.ceil(deadline)
 
-      if (deadline === undefined) {
-        jsPsych.endExperiment("A kísérlet végetért, mert túl sok hibát követtél el az 'A' rész alatt. Kérlek, hogy vedd fel a kapcsolatot a kísérletvezetővel.");
+      if (deadline === undefined | isNaN(deadline)) {
+        jsPsych.endExperiment('A kísérlet végetért, mert túl sok hibát követtél el az "A" rész alatt. Kérlek, hogy vedd fel a kapcsolatot a kísérletvezetővel.');
       }
       // For primeprobe add prime time
       if (task === 'primeprobe') {
@@ -708,9 +722,6 @@ export async function run({ assetPaths, input = {}, environment }) {
   var primeTest = {
     type: HtmlKeyboardResponsePlugin,
     stimulus: function () {
-      block_data = jsPsych.timelineVariable('testStimuli')
-      trial_data = block_data[index]
-
       return `
             <div style="display: block; color:black; font-weight: bold; font-size: 30px;">
               ${trial_data.prime}<br>
@@ -724,7 +735,7 @@ export async function run({ assetPaths, input = {}, environment }) {
     data: {
       task: 'prime',
       prime: function() {
-        block_data = jsPsych.timelineVariable('calibrationStimuli')
+        block_data = jsPsych.timelineVariable('testStimuli')
         trial_data = block_data[index]
         return trial_data.prime
       }
@@ -732,16 +743,30 @@ export async function run({ assetPaths, input = {}, environment }) {
     save_trial_parameters: {
       stimulus: false
     }
-  }
+  };
+
+  var testFixationCross = {
+    type: HtmlKeyboardResponsePlugin,
+    stimulus: '<div style="font-size:60px; color: gray;">+</div>',
+    choices: "NO_KEYS",
+    trial_duration: 1000,
+    data: {
+      task: 'fixation'
+    },
+    save_trial_parameters: {
+      stimulus: false
+    },
+    on_start: function() {
+      block_data = jsPsych.timelineVariable('testStimuli')
+      trial_data = block_data[index]
+    }
+  };
 
   var testTrial = {
     // Define a template for a test stroop trial
     type: HtmlKeyboardResponsePlugin,
     // HTML template for test trial
     stimulus: function () {
-      block_data = jsPsych.timelineVariable('testStimuli')
-      trial_data = block_data[index]
-
       return `<div style="font-size: 36px; font-weight: bold; color: ${trial_data.color}">
       ${trial_data.word}
       </div>`
@@ -750,18 +775,12 @@ export async function run({ assetPaths, input = {}, environment }) {
     data: {
       task: 'test_trial',
       correct_response: function() {
-        block_data = jsPsych.timelineVariable('testStimuli')
-        trial_data = block_data[index]
         return trial_data.correctResponse
       },
       color: function () {
-        block_data = jsPsych.timelineVariable('calibrationStimuli')
-        trial_data = block_data[index]
         return trial_data.color
       },
       word: function () {
-        block_data = jsPsych.timelineVariable('calibrationStimuli')
-        trial_data = block_data[index]
         return trial_data.word
       },
       deadline: function() {
@@ -797,7 +816,7 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   // Define timeline by task
   if (task === 'stroop') {
-    var testBlockTimeline = [fixationCross, testTrial]
+    var testBlockTimeline = [testFixationCross, testTrial]
   } else if (task === 'primeprobe') {
     var testBlockTimeline = [primeTest, testTrial]
   }
@@ -896,14 +915,14 @@ export async function run({ assetPaths, input = {}, environment }) {
   };
 
   timeline.push(
-    informedScreen,
-    consentScreen,
-    neptun,
-    instructionsScreen,
-    startPracticeScreen,
-    countDownScreen,
-    practiceBlock,
-    endPractice,
+    // informedScreen,
+    // consentScreen,
+    // neptun,
+    // instructionsScreen,
+    // startPracticeScreen,
+    // countDownScreen,
+    // practiceBlock,
+    // endPractice,
     blockLoop,
     endExperiment
   );
