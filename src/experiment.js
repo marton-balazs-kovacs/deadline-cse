@@ -71,9 +71,9 @@ export async function run({ assetPaths, input = {}, environment }) {
 }
 
   const jsPsych = initJsPsych({
-    on_finish: function() {
-      on_finish: () => jatos.endStudy(jsPsych.data.get().csv());
-    }
+    // on_finish: function() {
+    //   jatos.endStudy(jsPsych.data.get().csv());
+    // }
   });
 
   const timeline = [];
@@ -93,13 +93,13 @@ export async function run({ assetPaths, input = {}, environment }) {
     fullscreen_mode: true,
   });
 
-  // Preload assets
-  timeline.push({
-    type: PreloadPlugin,
-    images: assetPaths.images,
-    audio: assetPaths.audio,
-    video: assetPaths.video,
-  });
+  // // Preload assets
+  // timeline.push({
+  //   type: PreloadPlugin,
+  //   images: assetPaths.images,
+  //   audio: assetPaths.audio,
+  //   video: assetPaths.video,
+  // });
 
   var informedProceed = true
 
@@ -227,9 +227,6 @@ export async function run({ assetPaths, input = {}, environment }) {
     ],
     data: {
       task: 'neptun'
-    },
-    save_trial_parameters: {
-      prompt: false
     }
   }
 
@@ -374,7 +371,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   // Practice phase
   // Create pseudo random practice stimuli
   // TRUE value should be 24 false
-  const practiceStimuli = getRandomTrials(4, task = task, false);
+  const practiceStimuli = getRandomTrials(24, task = task, false);
 
   // Define template for fixation cross
   var fixationCross = {
@@ -541,11 +538,17 @@ export async function run({ assetPaths, input = {}, environment }) {
   };
 
   // Calibration phase
+  if (task === 'stroop') {
+    var numberTestTrials = 80
+  } else if (task === 'primeprobe') {
+    var numberTestTrials = 96
+  }
+
   const blockLoopData = [
-    { blockId: '1', testStimuli: getRandomTrials(4, task = task, true), calibrationStimuli: getRandomCalibrationTrials(4, task = task) },
-    { blockId: '2', testStimuli: getRandomTrials(4, task = task, true), calibrationStimuli: getRandomCalibrationTrials(4, task = task) },
-    { blockId: '3', testStimuli: getRandomTrials(4, task = task, true), calibrationStimuli: getRandomCalibrationTrials(4, task = task) },
-    { blockId: '4', testStimuli: getRandomTrials(4, task = task, true), calibrationStimuli: getRandomCalibrationTrials(4, task = task) },
+    { blockId: '1', testStimuli: getRandomTrials(numberTestTrials, task = task, true), calibrationStimuli: getRandomCalibrationTrials(28, task = task) },
+    { blockId: '2', testStimuli: getRandomTrials(numberTestTrials, task = task, true), calibrationStimuli: getRandomCalibrationTrials(28, task = task) },
+    { blockId: '3', testStimuli: getRandomTrials(numberTestTrials, task = task, true), calibrationStimuli: getRandomCalibrationTrials(28, task = task) },
+    { blockId: '4', testStimuli: getRandomTrials(numberTestTrials, task = task, true), calibrationStimuli: getRandomCalibrationTrials(28, task = task) },
   ];
 
   var index = 0;
@@ -595,6 +598,16 @@ export async function run({ assetPaths, input = {}, environment }) {
       },
       word: function () {
         return trial_data.word
+      },
+      prime: function() {
+        if (task === 'stroop') {
+          return ""
+        } else if (task === 'primeprobe') {
+          return trial_data.prime
+        }
+      },
+      block_id: function() {
+        return jsPsych.timelineVariable('blockId')
       }
     },
     on_finish: function (data) {
@@ -665,7 +678,7 @@ export async function run({ assetPaths, input = {}, environment }) {
     timeline: calibrationBlockTimeline,
     data: {
       block_id: function() {
-        jsPsych.timelineVariable('blockId')
+        return jsPsych.timelineVariable('blockId')
       }
     },
     loop_function() {
@@ -696,12 +709,12 @@ export async function run({ assetPaths, input = {}, environment }) {
     data: {
       task: 'end_calibration',
       block_id: function() {
-        jsPsych.timelineVariable('blockId')
+        return jsPsych.timelineVariable('blockId')
       }
     },
     on_start: function () {
       index = 0;
-      deadline = jsPsych.data.get().filter({task: 'calibration_trial', correct: true}).select('rt').mean();
+      deadline = jsPsych.data.get().filter({task: 'calibration_trial', correct: true, block_id: jsPsych.timelineVariable('blockId')}).select('rt').mean();
       deadline = Math.ceil(deadline)
 
       if (deadline === undefined | isNaN(deadline)) {
@@ -783,6 +796,16 @@ export async function run({ assetPaths, input = {}, environment }) {
       word: function () {
         return trial_data.word
       },
+      prime: function() {
+        if (task === 'stroop') {
+          return ""
+        } else if (task === 'primeprobe') {
+          return trial_data.prime
+        }
+      },
+      block_id: function() {
+        return jsPsych.timelineVariable('blockId')
+      },
       deadline: function() {
         return deadline
       }
@@ -825,7 +848,7 @@ export async function run({ assetPaths, input = {}, environment }) {
     timeline: testBlockTimeline,
     data: {
       block_id: function() {
-        jsPsych.timelineVariable('blockId')
+        return jsPsych.timelineVariable('blockId')
       }
     },
     loop_function() {
@@ -855,7 +878,7 @@ export async function run({ assetPaths, input = {}, environment }) {
       data: {
         task: 'end_calibration',
         block_id: function() {
-          jsPsych.timelineVariable('blockId')
+          return jsPsych.timelineVariable('blockId')
         }
       },
       on_start: function () {
@@ -894,8 +917,7 @@ export async function run({ assetPaths, input = {}, environment }) {
       Köszönjük a részvételt!
     </p>
     <p>
-      A kutatásban való részvételedet a Neptun-kódod megadásával igazolhatod,
-      amit <a target="_blank" href="https://forms.gle/k7utRzfUPwJjTjRt6">ERRE</a> a linkre kattintva tudsz megtenni. Ne feledd, hogy csak akkor kapod meg a pontot,
+      Ne feledd, hogy csak akkor kapod meg a pontot,
       ha a feladat mindkét verzióját teljesíted és mind a kétszer megadod a Neptun-kódodat!
     </p>
     <p>
@@ -915,14 +937,14 @@ export async function run({ assetPaths, input = {}, environment }) {
   };
 
   timeline.push(
-    // informedScreen,
-    // consentScreen,
-    // neptun,
-    // instructionsScreen,
-    // startPracticeScreen,
-    // countDownScreen,
-    // practiceBlock,
-    // endPractice,
+    informedScreen,
+    consentScreen,
+    neptun,
+    instructionsScreen,
+    startPracticeScreen,
+    countDownScreen,
+    practiceBlock,
+    endPractice,
     blockLoop,
     endExperiment
   );
