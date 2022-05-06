@@ -46,7 +46,7 @@ export async function run({ assetPaths, input = {}, environment }) {
     },
     "instructions_detail": {
         "stroop": "A feladatod az lesz, hogy meghatározd, milyen színnel van írva a szó, miközben a szó jelentését figyelmen kívül hagyod. Tehát a fenti 2 példára a helyes válaszok a piros és a sárga. Mindegyik szín négy válaszbillentyű (x; c; n; m) valamelyikéhez lesz hozzárendelve. Azt, hogy melyik szín melyik válaszbillentyűhöz tartozik, később, a gyakorló rész alatt lesz alkalmad megtanulni. Kérünk, hogy olyan gyorsan válaszolj, amennyire ez lehetséges hibázás nélkül!",
-        "primeprobe": "A feladatod az lesz, hogy minden próba során beazonosítsd a másodikként felvillanó, egyedülálló szót (ne az elsőként felvillanó három szót), és arra reagálj a megfelelő billentyű megnyomásával. Az egyes szavakhoz tartozó billentyűket a következő oldalon lévő táblázatban láthatod. Igyekezz minden próbánál olyan gyorsan válaszolni, amennyire hibázás nélkül lehetséges!"
+        "primeprobe": "A feladatod az lesz, hogy minden próba során beazonosítsd a másodikként felvillanó, egyedülálló szót (ne az elsőként felvillanó három szót), és arra reagálj a megfelelő billentyű megnyomásával. Az egyes szavakhoz tartozó billentyűket a következő oldalon lévő táblázatban láthatod és a gyakorlórész alatt memorizálhatod. Igyekezz minden próbánál olyan gyorsan válaszolni, amennyire hibázás nélkül lehetséges!"
     },
     "mapping_key": {
         "stroop": ["x", "c", "n", "m"],
@@ -58,15 +58,15 @@ export async function run({ assetPaths, input = {}, environment }) {
     },
     "start_practice": {
         "stroop": "Az alábbi táblázatban láthatod, hogy melyik betűszínhez melyik gomb tartozik, illetve, hogy melyik gombot melyik ujjaddal kell megnyomnod. A feladatod tehát, hogy ezek alapján reagálj a felvillanó szavak betűszínére. Minden szó megjelenése előtt egy '+' jelet fogsz látni, ez jelzi, hogy a következő szóra kell készülnöd.",
-        "primeprobe": "Az alábbi táblázatban láthatod, hogy melyik szóhoz melyik gomb tartozik, illetve, hogy melyik gombot melyik ujjaddal kell megnyomnod. A feladatod tehát, hogy minden próba során ezek szerint reagálj a másodikként felvillanó szóra. Minden próba előtt egy '+' jelet fogsz látni, ez jelzi, hogy a következő próbára kell készülnöd."
+        "primeprobe": "Az alábbi táblázatban láthatod, hogy melyik szóhoz melyik gomb tartozik, illetve, hogy melyik gombot melyik ujjaddal kell megnyomnod. A feladatod tehát, hogy minden próba során ezek szerint reagálj a másodikként felvillanó szóra."
     },
-    "trial_stimulus_duration": {
-        "stroop": "",
-        "primeprobe": ""
-    },
+    "end_practice": {
+      "stroop": "Most következik a négy kísérleti szakasz, amelyek 'A' és 'B' részekből állnak. Ezek során már nem lesz a képernyőn, hogy melyik színhez melyik gomb tartozik, valamint nem fogsz visszajelzést kapni arról, hogy helyesen válaszoltál-e.",
+      "primeprobe": "Most következik a négy kísérleti szakasz, amelyek 'A' és 'B' részekből állnak. Ezek során már nem lesz a képernyőn, hogy melyik szóhoz melyik gomb tartozik, valamint nem fogsz visszajelzést kapni arról, hogy helyesen válaszoltál-e."
+  },
     "end_calibration": {
         "stroop": "A most következő 'B' részben limitált időd lesz reagálni, ezért talán gyorsabbnak fog tűnni a feladat. Igyekezz mindig a következő szó megjelenése előtt reagálni (ha meglátod a '+' jelet, már a következő szóra kell készülnöd) és ügyelj arra, hogy helyesen válaszolj!",
-        "primeprobe": "A most következő 'B' részben limitált időd lesz reagálni, ezért talán gyorsabbnak fog tűnni a feladat. Igyekezz beleférni az időlimitbe (ha meglátod a '+' jelet, már a következő próbára kell készülnöd) és ügyelj arra, hogy helyesen válaszolj!"
+        "primeprobe": "A feladatod a most következő 'B' részben is ugyanaz lesz, viszont kevesebb időd lesz reagálni, ezért gyorsabbnak fog tűnni a feladat. Igyekezz az időkorláton belül reagálni és ügyelj arra, hogy helyesen válaszolj!"
     }
 }
 
@@ -83,7 +83,8 @@ export async function run({ assetPaths, input = {}, environment }) {
 
   // Add data to all rows of the participant
   jsPsych.data.addProperties({
-    participant_id: participant_id
+    participant_id: participant_id,
+    conflict_task: task
   });
 
   // Switch to fullscreen
@@ -137,7 +138,7 @@ export async function run({ assetPaths, input = {}, environment }) {
       a kísérlettel kapcsolatban, kérlek, keresd Székely Zsuzsát (szekely.zsuzsa.mail@gmail.com)!
       <p>A „Hozzájárulás az adatkezeléshez” c. dokumentumot elolvastam és a benne foglaltakat elfogadom.</p>
     </p>
-    <p class=${informedProceed? null: 'alert'}>A továbblépéshez kérem kattintson a Részt veszek gombra.</p>
+    <p class=${informedProceed? null: 'alert'}>A továbblépéshez kattints a Részt veszek gombra!</p>
   </div>`},
       // canvas_size: [300, 300],
       choices: ['Részt veszek', 'Nem veszek részt'],
@@ -148,6 +149,12 @@ export async function run({ assetPaths, input = {}, environment }) {
         } else {
           informedProceed = false
         }
+      },
+      data: {
+        task: 'informed'
+      },
+      save_trial_parameters: {
+        stimulus: false
       }
     }],
     loop_function: function(){
@@ -184,7 +191,7 @@ export async function run({ assetPaths, input = {}, environment }) {
   </p>
   <br>
   <h3>A kutatásban való részvétel körülményeiről részletes tájékoztatást kaptam, a feltételekkel egyetértek.</h3>
-  <p class=${consentProceed ? null : 'alert'}>A továbblépéshez kérem kattintson a Részt veszek gombra.</p>
+  <p class=${consentProceed ? null : 'alert'}>A továbblépéshez kattints a Részt veszek gombra!</p>
   </div>
   `},
       choices: ['Részt veszek', 'Nem veszek részt'],
@@ -195,6 +202,12 @@ export async function run({ assetPaths, input = {}, environment }) {
         } else {
           consentProceed = false
         }
+      },
+      data: {
+        task: 'consent'
+      },
+      save_trial_parameters: {
+        stimulus: false
       }
     }],
     loop_function: function () {
@@ -211,7 +224,13 @@ export async function run({ assetPaths, input = {}, environment }) {
     type: SurveyTextPlugin,
     questions: [
       {prompt: 'Mi a NEPTUN kódod?', placeholder: 'neptun', required: true}
-    ]
+    ],
+    data: {
+      task: 'neptun'
+    },
+    save_trial_parameters: {
+      prompt: false
+    }
   }
 
   // Example
@@ -266,7 +285,13 @@ export async function run({ assetPaths, input = {}, environment }) {
   Nyomd meg a Space billentyűt a folytatáshoz!
   </div>
   `,
-    choices: [" "]
+    choices: [" "],
+    data: {
+      task: 'instructions'
+    },
+    save_trial_parameters: {
+      stimulus: false
+    }
   };
 
   // Table for key-response mapping
@@ -311,6 +336,9 @@ export async function run({ assetPaths, input = {}, environment }) {
       trial_duration: 1000,
       data: {
         task: 'countdown'
+      },
+      save_trial_parameters: {
+        stimulus: false
       }
     }],
     timeline_variables: [
@@ -334,7 +362,13 @@ export async function run({ assetPaths, input = {}, environment }) {
   ${keyResponseMapping}
   </div>
   `,
-    choices: [" "]
+    choices: [" "],
+    data: {
+      task: 'start_practice'
+    },
+    save_trial_parameters: {
+      stimulus: false
+    }
   };
 
   // Practice phase
@@ -350,6 +384,9 @@ export async function run({ assetPaths, input = {}, environment }) {
     trial_duration: 1000,
     data: {
       task: 'fixation'
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   };
 
@@ -371,7 +408,6 @@ export async function run({ assetPaths, input = {}, environment }) {
       `
     },
     choices: taskData.mapping_key[task],
-    stimulus_duration: 250,
     prompt: `
         <br>
         <div style="display: inline-block; color:black; font-weight:normal; font-size: 30px;">
@@ -379,7 +415,9 @@ export async function run({ assetPaths, input = {}, environment }) {
         </div>`,
     data: {
       task: 'practice_trial',
-      correct_response: jsPsych.timelineVariable('correctResponse')
+      correct_response: jsPsych.timelineVariable('correctResponse'),
+      color: jsPsych.timelineVariable('color'),
+      word: jsPsych.timelineVariable('word')
     },
     on_finish: function (data) {
       // Score the response as correct or incorrect.
@@ -393,10 +431,15 @@ export async function run({ assetPaths, input = {}, environment }) {
       if (task === 'stroop') {
         trial.response_ends_trial = true
         trial.trial_duration = null
+        trial.stimulus_duration = 250
       } else if (task === 'primeprobe') {
         trial.response_ends_trial = false
         trial.trial_duration = 2000
+        trial.stimulus_duration = 133
       }
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   };
 
@@ -415,7 +458,11 @@ export async function run({ assetPaths, input = {}, environment }) {
     trial_duration: 166,
     stimulus_duration: 133,
     data: {
-      task: 'prime'
+      task: 'prime',
+      prime: jsPsych.timelineVariable('prime')
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   }
 
@@ -451,6 +498,9 @@ export async function run({ assetPaths, input = {}, environment }) {
     trial_duration: 1000,
     data: {
       task: 'feedback'
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   };
 
@@ -473,10 +523,10 @@ export async function run({ assetPaths, input = {}, environment }) {
       <div>
         <h2>Gyakorlás vége</h2>
         <p>
-          Most következik a négy kísérleti szakasz, amelyek 'A' és 'B' részekből állnak.
-          Ezek során már nem lesz a képernyőn, hogy melyik színhez
-          melyik gomb tartozik, valamint nem fogsz visszajelzést kapni arról, hogy
-          helyesen válaszoltál-e. Tartsd az ujjaid a megfelelő gombokon és nyomd
+          ${taskData.end_practice[task]}
+        </p>
+        <p>
+          Tartsd az ujjaid a megfelelő gombokon és nyomd
           meg a Space billentyűt az első 'A' rész megkezdéséhez!
         </p>
         ${keyResponseMapping}
@@ -484,6 +534,9 @@ export async function run({ assetPaths, input = {}, environment }) {
     choices: [" "],
     data: { 
       task: 'end_practice'
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   };
 
@@ -510,14 +563,22 @@ export async function run({ assetPaths, input = {}, environment }) {
             </div>`
     },
     choices: taskData.mapping_key[task],
-    trial_duration: null,
-    stimulus_duration: 250,
     data: {
       task: 'calibration_trial',
       correct_response: function () {
         block_data = jsPsych.timelineVariable('calibrationStimuli')
         trial_data = block_data[index]
         return trial_data.correctResponse
+      },
+      color: function () {
+        block_data = jsPsych.timelineVariable('calibrationStimuli')
+        trial_data = block_data[index]
+        return trial_data.color
+      },
+      word: function () {
+        block_data = jsPsych.timelineVariable('calibrationStimuli')
+        trial_data = block_data[index]
+        return trial_data.word
       }
     },
     on_finish: function (data) {
@@ -534,10 +595,15 @@ export async function run({ assetPaths, input = {}, environment }) {
       if (task === 'stroop') {
         trial.response_ends_trial = true
         trial.trial_duration = null
+        trial.stimulus_duration = 250
       } else if (task === 'primeprobe') {
         trial.response_ends_trial = false
         trial.trial_duration = 2000
+        trial.stimulus_duration = 133
       }
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   };
 
@@ -559,7 +625,15 @@ export async function run({ assetPaths, input = {}, environment }) {
     trial_duration: 166,
     stimulus_duration: 133,
     data: {
-      task: 'prime'
+      task: 'prime',
+      prime: function() {
+        block_data = jsPsych.timelineVariable('calibrationStimuli')
+        trial_data = block_data[index]
+        return trial_data.prime
+      }
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   }
 
@@ -595,7 +669,7 @@ export async function run({ assetPaths, input = {}, environment }) {
           <div>
             <h2>'A' rész vége</h2>
             <p>
-              ${taskData.instructions_detail[task]}
+              ${taskData.end_calibration[task]}
               <br>
               Továbbra is tartsd az ujjaid a megfelelő gombokon és nyomd meg a Space billentyűt a 'B' rész megkezdéséhez!
             </p>
@@ -606,6 +680,9 @@ export async function run({ assetPaths, input = {}, environment }) {
       task: 'end_calibration',
       block_id: function() {
         jsPsych.timelineVariable('blockId')
+      },
+      deadline: function() {
+        return deadline
       }
     },
     on_start: function () {
@@ -619,8 +696,10 @@ export async function run({ assetPaths, input = {}, environment }) {
       // For primeprobe add prime time
       if (task === 'primeprobe') {
         deadline = deadline + 166
-        console.log(deadline)
       }
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
 };
 
@@ -643,7 +722,15 @@ export async function run({ assetPaths, input = {}, environment }) {
     trial_duration: 166,
     stimulus_duration: 133,
     data: {
-      task: 'prime'
+      task: 'prime',
+      prime: function() {
+        block_data = jsPsych.timelineVariable('calibrationStimuli')
+        trial_data = block_data[index]
+        return trial_data.prime
+      }
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   }
 
@@ -660,13 +747,25 @@ export async function run({ assetPaths, input = {}, environment }) {
       </div>`
     },
     choices: taskData.mapping_key[task],
-    stimulus_duration: 250,
     data: {
       task: 'test_trial',
       correct_response: function() {
         block_data = jsPsych.timelineVariable('testStimuli')
         trial_data = block_data[index]
         return trial_data.correctResponse
+      },
+      color: function () {
+        block_data = jsPsych.timelineVariable('calibrationStimuli')
+        trial_data = block_data[index]
+        return trial_data.color
+      },
+      word: function () {
+        block_data = jsPsych.timelineVariable('calibrationStimuli')
+        trial_data = block_data[index]
+        return trial_data.word
+      },
+      deadline: function() {
+        return deadline
       }
     },
     on_finish: function (data) {
@@ -685,10 +784,15 @@ export async function run({ assetPaths, input = {}, environment }) {
 
       if (task === 'stroop') {
         trial.response_ends_trial = true
+        trial.stimulus_duration = 250
       } else if (task === 'primeprobe') {
         trial.response_ends_trial = false
+        trial.stimulus_duration = 133
       }
     },
+    save_trial_parameters: {
+      stimulus: false
+    }
   };
 
   // Define timeline by task
@@ -745,6 +849,9 @@ export async function run({ assetPaths, input = {}, environment }) {
       } else {
         false
       }
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   }
 
@@ -782,6 +889,9 @@ export async function run({ assetPaths, input = {}, environment }) {
     `,
     data: {
       task: 'end_experiment'
+    },
+    save_trial_parameters: {
+      stimulus: false
     }
   };
 
