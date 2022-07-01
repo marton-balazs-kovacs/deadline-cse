@@ -36,7 +36,8 @@ export async function run({ assetPaths, input = {}, environment }) {
   // Get task
   // This code should be changed to jatos js once it is running on jatos see https://www.jatos.org/jatos.js-Reference.html
   // If you want to send the task in jatos query url use jatos.urlQueryParameters.task
-  var task = 'primeprobe';
+  var task = 'stroop';
+  // var task = 'primeprobe';
   
   // Load task specific information
   var taskData = {
